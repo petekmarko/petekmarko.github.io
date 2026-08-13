@@ -5,896 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marko Petek</title>
     <style>
+        /* Reset & base */
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;color:#1e293b;background:#fff}
 
-        /* ===== TRANSPARENT OVERLAY HEADER (Homepage Only) ===== */
-.transparent-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    
-    /* Semi-transparent background */
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    
-    /* Smooth transition for hiding */
-    transition: opacity 0.4s ease, visibility 0.4s ease;
-    
-    /* Subtle border at bottom */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* ===== GRADIENT TRANSPARENT HEADER ===== */
-.transparent-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    
-    /* Gradient: More solid at top, fades to transparent at bottom */
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.3) 0%,      /* 30% white at very top */
-        rgba(255, 255, 255, 0.15) 50%,    /* 15% white in middle */
-        rgba(255, 255, 255, 0) 100%       /* Completely transparent at bottom */
-    );
-    
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    
-    padding: 15px 40px 30px 40px;    /* Extra padding at bottom for gradient fade */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
-    
-    /* No border - let gradient handle it */
-    border-bottom: none;
-}
-
-/* Hidden state */
-.transparent-header.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-/* Logo - white for contrast against image */
-.header-logo {
-    font-size: 26px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
-    letter-spacing: -0.5px;
-}
-
-/* Navigation buttons container */
-.header-nav {
-    display: flex;
-    gap: 12px;
-}
-
-/* Navigation buttons with their own gradient */
-.nav-link {
-    color: white;
-    text-decoration: none;
-    padding: 10px 22px;
-    border-radius: 50px;
-    font-weight: 500;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    
-    /* Gradient background for buttons too */
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.25) 0%,
-        rgba(255, 255, 255, 0.1) 100%
-    );
-    
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.nav-link:hover {
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.4) 0%,
-        rgba(255, 255, 255, 0.2) 100%
-    );
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-}
-
-.nav-link.highlight {
-    background: linear-gradient(
-        to bottom,
-        #3b82f6 0%,
-        #2563eb 100%
-    );
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
-}
-
-.nav-link.highlight:hover {
-    background: linear-gradient(
-        to bottom,
-        #2563eb 0%,
-        #1d4ed8 100%
-    );
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .transparent-header {
-        padding: 12px 20px 25px 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-    }
-    
-    .header-nav {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .nav-link {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-    
-    .header-logo {
-        font-size: 22px;
-    }
-}
-
-/* Hidden state - when scrolled past homepage */
-.transparent-header.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;    /* Allows clicking through when hidden */
-}
-
-/* Logo styling */
-.header-logo {
-    font-size: 26px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    letter-spacing: -0.5px;
-}
-
-/* Navigation buttons */
-.header-nav {
-    display: flex;
-    gap: 12px;
-}
-
-.nav-link {
-    color: white;
-    text-decoration: none;
-    padding: 10px 22px;
-    border-radius: 50px;
-    font-weight: 500;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-}
-
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.nav-link.highlight {
-    background: #3b82f6;
-    border-color: rgba(255, 255, 255, 0.4);
-    color: white;
-}
-
-.nav-link.highlight:hover {
-    background: #2563eb;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .transparent-header {
-        padding: 12px 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-    }
-    
-    .header-nav {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .nav-link {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-    
-    .header-logo {
-        font-size: 22px;
-    }
-}
-        /* ===== RESET & BASE STYLES ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #1e293b;
-            background: #ffffff;
-        }
-
-        /* ===== SEMI-TRANSPARENT MENU BAR (Over Image) ===== */
-        .menu-bar {
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.5) 0%,
-                rgba(255, 255, 255, 0.2) 60%,
-                rgba(255, 255, 255, 0) 100%
-                );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 15px 30px 35px 30px;
-}
-
-        .logo {
-            font-size: 26px;
-            font-weight: bold;
-            color: #1e3a8a;
-            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
-        }
-
-        .menu-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .menu-btn {
+        /* Header */
+        .transparent-header{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:15px 40px;background:linear-gradient(to bottom,rgba(255,255,255,.28) 0%,rgba(255,255,255,.12) 50%,rgba(255,255,255,0) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:opacity .4s ease,visibility .4s ease;border-bottom:none}
+        .transparent-header.hidden{opacity:0;visibility:hidden;pointer-events:none}
+        .header-logo{font-size:26px;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.3);letter-spacing:-.5px}
+        .header-nav{display:flex;gap:12px}
+        .nav-link, .glass-btn {
+            position: relative;
+            color: #fff;
             text-decoration: none;
-            color: #1e293b;
+            padding: 9px 20px;
+            border-radius: 50px;
             font-weight: 500;
-            padding: 10px 20px;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            backdrop-filter: blur(5px);
-        }
-
-        .menu-btn:hover {
-            background: rgba(255, 255, 255, 0.5);
-            color: #1e3a8a;
-        }
-
-        .menu-btn.highlight {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .menu-btn.highlight:hover {
-            background: #1e3a8a;
-        }
-
-        /* ===== FULL SCREEN HERO IMAGE SECTION ===== */
-        .hero {
-            position: relative;
-            width: 100%;
-            height: 100vh;                    /* Full viewport height */
-            min-height: 600px;
-            overflow: hidden;
-        }
-
-        /* The full-screen image */
-        .hero-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;                /* Fills screen without distortion */
-            object-position: bottom;
-            z-index: 1;
-        }
-
-        /* Dark overlay for better text readability */
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);   /* Semi-transparent dark overlay */
-            z-index: 2;
-        }
-
-        /* Content on top of the image */
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 0 20px;
-        }
-
-        .hero-content h1 {
-            font-size: 64px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero-content p {
-            font-size: 24px;
-            margin-bottom: 30px;
-            text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero-btn {
-            display: inline-block;
-            background: #3b82f6;
-            color: white;
-            text-decoration: none;
-            padding: 16px 40px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .hero-btn:hover {
-            background: #1e3a8a;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Scroll indicator arrow */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
-            color: white;
-            font-size: 14px;
-            text-align: center;
-            animation: bounce 2s infinite;
-            cursor: pointer;
-        }
-
-        .scroll-indicator a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .arrow {
-            font-size: 30px;
-            display: block;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-10px); }
-            60% { transform: translateX(-50%) translateY(-5px); }
-        }
-
-        /* Hero Image Navigation Dots */
-        .hero-dots {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
-            display: flex;
-            gap: 12px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .dot.active {
-            background: white;
-            border-color: white;
-        }
-
-        .dot:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: scale(1.2);
-        }
-
-        /* ===== SECTIONS ===== */
-        section {
-            margin: 0;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        section:not(.hero) {
-            padding: 0;
-        }
-
-        #plan {
-            padding: 0;
-            margin: 0;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            font-size: 42px;
-            color: #1e3a8a;
-            margin-bottom: 40px;
-            text-align: center;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 80px;
-            height: 4px;
-            background: #3b82f6;
-            margin: 15px auto 0;
-            border-radius: 2px;
-        }
-
-        /* ===== ABOUT SECTION ===== */
-        #about {
-            background: white;
-        }
-
-        .about-wrapper {
-            display: block;
-            margin-bottom: 0px;
-        }
-
-        .about-wrapper img {
-            width: 100%;
-            height: 550px;
-            object-fit: cover;
-            border-radius: 0;
-            display: block;
-            margin-bottom: 30px;
-            margin-top: 0px;
-            margin-left: 0px;
-            margin-right: 0px;
-        }
-
-        .about-image {
-            background: #dbeafe;
-            border-radius: 0px;
-            height: 0px;
-            display: grid;
-            align-items: center;
-            grid-template-columns: 1fr;
-            gap: 0px;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 18px;
-            overflow: hidden;
-        }
-
-        .about-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .about-text {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .about-text h3 {
-            font-size: 32px;
-            color: #1e3a8a;
-            margin-bottom: 20px;
-        }
-
-        .about-text p {
-            color: #475569;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .course-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .course-btn {
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: linear-gradient(to bottom, #3b82f6 0%, #2563eb 100%);
-            border: 0px solid rgba(255, 255, 255, 0.3);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-            margin: 20px 0;
-            display: inline-block;
-        }
-
-        .course-btn:hover {
-            background: linear-gradient(to bottom, #2563eb 0%, #1d4ed8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-        }
-
-        /* ===== COURSE SECTIONS ===== */
-        #beginners-course, #intermediate-course, #advanced-course {
-            background: #ffffff;
-        }
-
-        .course-content {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .course-content ul {
-            list-style-type: disc;
-            margin-left: 20px;
-            margin-bottom: 20px;
-            text-align: left;
-            display: inline-block;
-        }
-
-        .course-content li {
-            margin-bottom: 10px;
-        }
-
-        .course-gallery {
-            display: flex;
-            gap: 0;
-            width: 100%;
-            height: 350px;
-            overflow: hidden;
-        }
-
-        .course-gallery .gallery-link {
-            flex: 1;
-            display: block;
-            overflow: hidden;
-            text-decoration: none;
-        }
-
-        .course-gallery img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            border: none;
-            border-radius: 0;
-            transition: transform 0.35s ease, filter 0.35s ease;
-        }
-
-        .course-gallery .gallery-link:hover img {
-            transform: scale(1.05);
-            filter: brightness(1.05);
-        }
-
-        .course-gallery .gallery-link:focus-visible img {
-            outline: 2px solid rgba(255, 255, 255, 0.8);
-            outline-offset: -2px;
-        }
-
-        #advanced-course .course-gallery .gallery-link:nth-child(2) img {
-            object-position: bottom;
-        }
-
-        /* ===== GALLERY GRID (9 IMAGES) ===== */
-        #gallery {
-            position: relative;
-            min-height: 100vh;
-        }
-
-        #gallery .section-title {
-            position: absolute;
-            top: 0px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .gallery-grid {
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0px;
-            bottom: 0;
-            display: grid;
-            grid-template-columns: repeat(3, 4fr);
-            grid-template-rows: repeat(3, 3fr);
-            gap: 0;
-        }
-
-        .gallery-grid .gallery-link {
-            display: block;
-            overflow: hidden;
-            text-decoration: none;
-        }
-
-        .gallery-grid img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            border: none;
-            border-radius: 0;
-            transition: transform 0.35s ease, filter 0.35s ease;
-        }
-
-        .gallery-grid .gallery-link:hover img {
-            transform: scale(1.05);
-            filter: brightness(1.05);
-        }
-
-        .gallery-grid .gallery-link:focus-visible img {
-            outline: 2px solid rgba(255, 255, 255, 0.8);
-            outline-offset: -2px;
-        }
-
-        /* ===== MY PLAN SECTION ===== */
-        #plan {
-            background: none;
-            padding-bottom: 0 0 10px 0;
-        }
-
-        #plan .container {
-            max-width: none;
-            padding: 0;
-        }
-
-        .plan-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0;
-            margin-top: 0;
-        }
-
-        .plan-card {
-            background: none;
-            padding: 0px;
-            border-radius: 1px;
-            text-align: center;
-            box-shadow: none;
-            border: 0px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-
-        }
-
-        .plan-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
-        }
-
-        .plan-card img {
-            width: 100%;
-            height: 550px;
-            object-fit: cover;
-            border-radius: 0;
-            margin-bottom: 20px;
-        }
-
-        .plan-card h3 {
-            font-size: 22px;
-            color: #1e3a8a;
-            margin-bottom: 15px;
-        }
-
-        .plan-card p {
-            color: #64748b;
             font-size: 15px;
-        }
-
-       
-        /* ===== CONTACT SECTION ===== */
-        #contact {
-            background: #f0f9ff;
-        }
-
-        .contact-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .contact-info {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .contact-icon {
-            font-size: 30px;
-            background: #dbeafe;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .contact-details h4 {
-            color: #1e3a8a;
-            margin-bottom: 5px;
-        }
-
-        .contact-details p, .contact-details a {
-            color: #475569;
-            text-decoration: none;
-        }
-
-        .contact-form {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-
-        .submit-btn {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            letter-spacing: 0.01em;
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow:
+              0 1.5px 0 rgba(255, 255, 255, 0.50) inset,
+              0 -0.5px 0 rgba(0, 0, 0, 0.10) inset,
+              0 3px 14px rgba(0, 0, 0, 0.18),
+              0 0 0 0.5px rgba(0, 0, 0, 0.05);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+            transition: all 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
             cursor: pointer;
-            width: 100%;
-            transition: background 0.3s ease;
+            display: inline-block;
+            white-space: nowrap;
         }
+        .nav-link:hover, .glass-btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.18)}
+        .nav-link.highlight{background:rgba(59,130,246,.5);border-color:rgba(255,255,255,.26)}
+        .nav-link.highlight:hover{background:rgba(37,99,235,.78)}
 
-        .submit-btn:hover {
-            background: #1e3a8a;
+        /* Mobile menu button */
+        .mobile-menu-btn{display:none;background:transparent;border:0;padding:8px;cursor:pointer;width:44px;height:44px;align-items:center;justify-content:center}
+        .mobile-menu-btn .burger{display:block;width:22px;height:2px;background:#fff;position:relative;border-radius:2px;transition:background .18s ease,transform .28s ease}
+        .mobile-menu-btn .burger::before,.mobile-menu-btn .burger::after{content:'';position:absolute;left:0;width:22px;height:2px;background:#fff;border-radius:2px;transition:transform .28s ease,top .28s ease,opacity .18s ease}
+        .mobile-menu-btn .burger::before{top:-7px}
+        .mobile-menu-btn .burger::after{top:7px}
+        .transparent-header.open .mobile-menu-btn .burger{background:transparent}
+        .transparent-header.open .mobile-menu-btn .burger::before{transform:rotate(45deg);top:0}
+        .transparent-header.open .mobile-menu-btn .burger::after{transform:rotate(-45deg);top:0}
+
+        /* Hero */
+        .hero{position:relative;width:100%;height:100vh;min-height:520px;overflow:hidden}
+        .hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:bottom;z-index:1}
+        .scroll-indicator{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:3;color:#fff;font-size:14px;text-align:center;animation:bounce 2s infinite;cursor:pointer}
+        .scroll-indicator a{color:inherit;text-decoration:none}
+        .arrow{display:block;font-size:30px}
+        @keyframes bounce{0%,20%,50%,80%,100%{transform:translateX(-50%) translateY(0)}40%{transform:translateX(-50%) translateY(-10px)}60%{transform:translateX(-50%) translateY(-5px)}}
+
+        /* Hero dots */
+        .hero-dots{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:12px}
+        .dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer;border:2px solid rgba(255,255,255,.3);transition:all .2s ease}
+        .dot.active{background:#fff;border-color:#fff}
+        .dot:hover{transform:scale(1.15);background:rgba(255,255,255,.85)}
+
+        /* Sections & layout */
+        section{margin:0;min-height:100vh;position:relative}
+        .container{max-width:1000px;margin:0 auto;padding:0 16px}
+        .section-title{font-size:42px;color:#1e3a8a;margin-bottom:40px;text-align:center}
+        .section-title::after{content:'';display:block;width:80px;height:4px;background:#3b82f6;margin:15px auto 0;border-radius:2px}
+
+        /* About - flush with hero */
+        #about{background:#fff;padding:0}
+        .about-wrapper{margin:0}
+        .about-wrapper img{width:100%;height:auto;object-fit:cover;display:block;margin:0}
+        .about-text{text-align:center;max-width:800px;margin:0 auto}
+        .about-text h3{font-size:32px;color:#1e3a8a;margin-bottom:20px}
+        .about-text p{color:#475569;font-size:18px;margin-bottom:15px}
+
+          /* Gallery grid */
+          /* Keep gallery section a normal flow element (no full-screen min-height)
+              and use a responsive grid where each item maintains a 16:9 aspect ratio. */
+          #gallery{position:relative;padding:0px 0}
+          .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(33%,1fr));gap:0px;align-items:start}
+          .gallery-grid .gallery-link{display:block;overflow:hidden;border-radius:opx;aspect-ratio:16/9}
+          .gallery-grid img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease,filter .35s ease}
+          .gallery-grid .gallery-link:hover img{transform:scale(1.05);filter:brightness(1.1)}
+
+        /* Contact */
+        #contact{
+            position:relative;
+            /* Change this image path to any other one you want for the contact section */
+            background:
+                linear-gradient(135deg, rgba(6, 18, 31, 0.34), rgba(19, 56, 82, 0.20)),
+                url('Photos/Photo35.JPG') center/cover no-repeat;
+            padding:80px 0;
         }
-
-        /* ===== FOOTER ===== */
-        footer {
-            background: #1e3a8a;
-            color: white;
-            text-align: center;
-            padding: 25px;
+        #contact::before{
+            content:'';
+            position:absolute;
+            inset:0;
+            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+            pointer-events:none;
         }
-
-        /* ===== MOBILE RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .menu-bar {
-                flex-direction: column;
-                gap: 12px;
-                padding: 12px 15px;
-            }
-
-            .menu-buttons {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .menu-btn {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-
-            .hero-content h1 {
-                font-size: 40px;
-            }
-
-            .hero-content p {
-                font-size: 18px;
-            }
-
-            .about-wrapper {
-                grid-template-columns: 1fr;
-            }
-
-            .plan-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .gallery-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .contact-wrapper {
-                grid-template-columns: 1fr;
-            }
-
-            .section-title {
-                font-size: 32px;
-            }
+        #contact .section-title{color:#fff;text-shadow:0 6px 24px rgba(0,0,0,.35)}
+        #contact .section-title::after{background:rgba(255,255,255,.8)}
+        .contact-wrapper{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+        .contact-info,.contact-form{
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(26px) saturate(220%);
+            -webkit-backdrop-filter:blur(26px) saturate(220%);
+            border:1px solid rgba(255,255,255,0.10);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.20),0 18px 50px rgba(0,0,0,0.12);
+            padding:32px;
+            border-radius:22px;
         }
+        .contact-item{display:flex;align-items:center;gap:16px;margin-bottom:22px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,0.02)}
+        .contact-details h4{color:#f8fbff;margin-bottom:5px;font-weight:600}
+        .contact-details p,.contact-details a{color:rgba(255,255,255,0.82);text-decoration:none}
+        .contact-details a:hover{color:#fff}
+        .form-group{margin-bottom:16px}
+        .form-group input,.form-group textarea{
+            width:100%;
+            padding:13px 14px;
+            border:1px solid rgba(255,255,255,0.14);
+            border-radius:12px;
+            font-size:16px;
+            color:#fff;
+            background:rgba(255,255,255,0.04);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .form-group input::placeholder,.form-group textarea::placeholder{color:rgba(255,255,255,0.72)}
+        .form-group input:focus,.form-group textarea:focus{outline:none;border-color:rgba(255,255,255,0.32);box-shadow:0 0 0 3px rgba(255,255,255,0.08)}
+        .submit-btn{
+            background:linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06));
+            color:#fff;border:1px solid rgba(255,255,255,0.2);padding:14px 18px;border-radius:12px;font-weight:600;cursor:pointer;width:100%;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,0.18),0 16px 35px rgba(0,0,0,0.18);transition:transform .2s ease,box-shadow .2s ease;
+        }
+        .submit-btn:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),0 18px 38px rgba(0,0,0,0.22)}
 
-        @media (max-width: 480px) {
-            .gallery-grid {
-                grid-template-columns: 1fr;
-            }
+        footer{background:#1e3a8a;color:#fff;text-align:center;padding:25px}
+
+        /* Responsive */
+        @media(max-width:768px){
+            .transparent-header{padding:12px 16px}
+            .header-logo{font-size:22px}
+            .nav-link{padding:12px 16px;font-size:16px}
+            .hero{min-height:60vh}
+            .about-wrapper img{height:auto}
+            /* Make the About image edge-to-edge on mobile */
+            #about .about-wrapper img:first-of-type{width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);border-radius:0;display:block;object-fit:cover}
+            .gallery-grid{grid-template-columns:repeat(0,1fr);gap:0px}
+            /* Remove gallery padding on small devices */
+            #gallery{padding:0}
+            .contact-wrapper{grid-template-columns:1fr}
+            .section-title{font-size:32px}
+            .mobile-menu-btn{display:flex}
+            /* keep the nav present so we can animate its appearance */
+            .header-nav{display:flex;flex-direction:column;position:fixed;top:64px;right:16px;background:transparent;padding:8px;border-radius:8px;box-shadow:none;backdrop-filter:none;gap:8px;transform:translateY(-12px);opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.2,.9,.2,1),opacity .28s linear;z-index:1100}
+            .transparent-header.open .header-nav{transform:translateY(0);opacity:1;pointer-events:auto}
+        }
+        @media(max-width:480px){
+            .gallery-grid{grid-template-columns:1fr;gap:0px}
+            .about-wrapper img{height:auto}
+            .hero{min-height:50vh}
         }
     </style>
 </head>
@@ -903,10 +177,9 @@
     <!-- ===== TRANSPARENT HEADER (Homepage Only) ===== -->
 <header class="transparent-header" id="homepageHeader">
     <div class="header-logo">Marko Petek</div>
+    <button class="mobile-menu-btn" aria-label="Toggle navigation" aria-expanded="false"><span class="burger"></span></button>
     <nav class="header-nav">
         <a href="#home" class="nav-link">Home</a>
-        <a href="#plan" class="nav-link">My Plan</a>
-        <a href="#beginners-course" class="nav-link">Courses</a>
         <a href="#about" class="nav-link">About Me</a>
         <a href="#gallery" class="nav-link">Gallery</a>
         <a href="#contact" class="nav-link highlight">Contact</a>
@@ -915,10 +188,7 @@
 
     <!-- ===== FULL SCREEN HERO IMAGE ===== -->
     <section id="home" class="hero">
-        <!-- Replace this URL with your own image -->
-<img class="hero-image" 
-             src="Photos/Photo10.jpeg">
-        
+        <img class="hero-image" src="Photos/Photo28.JPG" alt="Hero image">
         <div class="scroll-indicator">
             <a href="#plan">
                 <span>Scroll Down</span>
@@ -927,190 +197,112 @@
         </div>
 
         <!-- Image Navigation Dots -->
-        <div class="hero-dots">
-            <span class="dot active" data-slide="0"></span>
-            <span class="dot" data-slide="1"></span>
-            <span class="dot" data-slide="2"></span>
-            <span class="dot" data-slide="3"></span>
-        </div>
+        <div class="hero-dots"></div>
 
-         <script>
-    // ===== LOCAL IMAGE SLIDESHOW =====
-    const heroImages = [
-        'Photos/Photo10.jpeg',
-        'Photos/Photo11.jpeg',
-        'Photos/Photo2.jpeg',
-        'Photos/Photo3.jpeg'
-    ];
-    
-    let currentImageIndex = 0;
-    const heroImage = document.querySelector('.hero-image');
-    const dots = document.querySelectorAll('.dot');
-    
-    function updateDots() {
-        dots.forEach((dot, index) => {
-            if (index === currentImageIndex) {
-                dot.classList.add('active');
-            } else {
-                dot.classList.remove('active');
+        <script>
+        // ===== RESPONSIVE HERO SLIDESHOW (desktop vs mobile arrays) =====
+        (function(){
+            const desktopHeroImages = [
+                'Photos/Photo28.JPG',
+                'Photos/Photo29.jpg',
+                'Photos/Photo2.jpeg',
+                'Photos/Photo3.jpeg'
+            ];
+
+            // Choose images you want to show on mobile here
+            const mobileHeroImages = [
+                'Photos/Photo19.jpeg',
+                'Photos/Photo5.jpeg',
+                'Photos/Photo9.jpeg',
+                'Photos/Photo15.jpeg'
+            ];
+
+            let heroImages = desktopHeroImages;
+            let currentImageIndex = 0;
+            const heroImage = document.querySelector('.hero-image');
+            const dotsContainer = document.querySelector('.hero-dots');
+            let slideInterval = null;
+
+            function renderDots(){
+                dotsContainer.innerHTML = '';
+                heroImages.forEach((_, idx) => {
+                    const dot = document.createElement('span');
+                    dot.className = 'dot';
+                    dot.dataset.slide = idx;
+                    dot.addEventListener('click', ()=> changeHeroImage(idx, true));
+                    dotsContainer.appendChild(dot);
+                });
             }
-        });
-    }
-    
-    function changeHeroImage(newIndex = null, instant = false) {
-        if (newIndex !== null) {
-            currentImageIndex = newIndex;
-        } else {
-            currentImageIndex = (currentImageIndex + 1) % heroImages.length;
-        }
-        
-        if (instant) {
-            // Instant change for dot clicks
-            heroImage.src = heroImages[currentImageIndex];
-            updateDots();
-        } else {
-            // Fade transition for automatic changes
-            heroImage.style.transition = 'opacity 1.2s ease-in-out';
-            heroImage.style.opacity = '0';
-            
-            setTimeout(() => {
-                heroImage.src = heroImages[currentImageIndex];
-                updateDots();
-                
-                setTimeout(() => {
+
+            function updateDots(){
+                const dots = dotsContainer.querySelectorAll('.dot');
+                dots.forEach((dot, idx) => dot.classList.toggle('active', idx === currentImageIndex));
+            }
+
+            function changeHeroImage(newIndex = null, instant = false){
+                if(newIndex !== null){ currentImageIndex = newIndex; }
+                else { currentImageIndex = (currentImageIndex + 1) % heroImages.length; }
+
+                if(instant){
+                    heroImage.src = heroImages[currentImageIndex];
+                    updateDots();
+                } else {
+                    heroImage.style.transition = 'opacity 1.2s ease-in-out';
+                    heroImage.style.opacity = '0';
+                    setTimeout(()=>{
+                        heroImage.src = heroImages[currentImageIndex];
+                        updateDots();
+                        setTimeout(()=> heroImage.style.opacity = '1', 100);
+                    }, 600);
+                }
+            }
+
+            function startSlideshow(){
+                if(slideInterval) clearInterval(slideInterval);
+                slideInterval = setInterval(()=> changeHeroImage(null, true), 30000);
+            }
+
+            function setupForViewport(){
+                const isMobile = window.matchMedia('(max-width:768px)').matches;
+                const chosen = isMobile ? mobileHeroImages : desktopHeroImages;
+                // simple reference check; if arrays differ by length or content, re-render
+                const needUpdate = heroImages.length !== chosen.length || heroImages.some((v,i)=> v !== chosen[i]);
+                if(needUpdate){
+                    heroImages = chosen.slice();
+                    currentImageIndex = 0;
                     heroImage.style.opacity = '1';
-                }, 100);
-            }, 1200);
-        }
-    }
-    
-    // Add click event listeners to dots
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            if (index !== currentImageIndex) {
-                changeHeroImage(index, true); // true for instant change
+                    heroImage.src = heroImages[0];
+                    renderDots();
+                    updateDots();
+                }
             }
-        });
-    });
-    
-    // Initialize dots
-    updateDots();
-    
-    // Change every 30 seconds (instant)
-    setInterval(() => changeHeroImage(null, true), 30000);
+
+            // Init on load
+            window.addEventListener('load', ()=>{
+                setupForViewport();
+                startSlideshow();
+            });
+
+            // Listen for viewport changes (e.g., rotate or resize)
+            const mql = window.matchMedia('(max-width:768px)');
+            try{ mql.addEventListener('change', setupForViewport); }catch(e){ mql.addListener(setupForViewport); }
+        })();
         </script>
 
     </section>
 
     <!-- ===== MY PLAN SECTION ===== -->
-    <section id="plan">
-            <div class="plan-cards">
-                <div class="plan-card">
-                    <img src="Photos/Photo13.jpeg" alt="Beginner Course">
-                    <a href="#beginners-course" class="course-btn">Beginners Course</a>
-                    <p>This course is perfect for anyone that wants to learn the basics of kayaking, even with no prior experience. It is the perfect opportunity to learn and start exploring the beautiful sport of kayaking, even if you never set in a kayak.</p>
-                    <br>
-                    <p>The course will be about 3 hours long on class I to class II rapids.</p>
-                </div>
-                <div class="plan-card">
-                    <img src="Photos/Photo14.jpeg" alt="Intermediate Course">
-                    <a href="#intermediate-course" class="course-btn">Intermediate Course</a>
-                    <p>This course is designed for those who want to take their kayaking to the next level. Here you will learn the how to navigate wild water, learn more advanced wild water techniques and improve your eskimo roll to perfection.</p>
-                    <br>
-                    <p>The course will be about 3 - 4 hours long on class II to class III rapids.</p>
-                </div>
-                <div class="plan-card">
-                    <img src="Photos/Photo9.jpeg" alt="Advanced Course">
-                    <a href="#advanced-course" class="course-btn">Advanced Course</a>
-                    <p>The advanced course is for those who want to experiance the extreme side of kayaking. You will be crossing class III to IV wild water, learn rescue techniques and improve your wildwater skills. When finishing this course you will feel comfrotable navegating class III to class IV rivers.</p>
-                    <p>The course will be about 4 hours long on class III to class IV rapids.</p>
-                </div>
-            </div>
-    </section>
-
-
+    
 
     <!-- ===== BEGINNERS COURSE SECTION ===== -->
-    <section id="beginners-course">
-        <div class="container">
-            <h2 class="section-title">Beginners Course</h2>
-            <div class="course-content">
-                <p>This course is an introducton to kayaking especially designed for those who have never kayaked before. You will learn the basics of kayaking, including how to handle the equipment, basic paddling techniques, and safety on the water. This course is perfect for anyone looking to start their kayaking journey and explore the beautiful world of whitewater.</p>
-                <br>
-                
-                <ul>
-                    <li>Basic paddling techniques</li>
-                    <li>Equipment handling</li>
-                    <li>Introduction to water navigation</li>
-                    <li>Building confidence on calm waters</li>
-                </ul>
-                <p>Duration: 1 day, 3 hours| Location: Soča river, from Čezsoča to Boka | Price: Contact for details</p>
-            </div>
-            <div class="course-gallery">
-                <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo1.jpeg" alt="Beginners Course 1"></a>
-                <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo2.jpeg" alt="Beginners Course 2"></a>
-                <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo18.jpeg" alt="Beginners Course 3"></a>
-            </div>
+ 
 
-        </div>
-    </section>
-
-    <!-- ===== INTERMEDIATE COURSE SECTION ===== -->
-    <section id="intermediate-course">
-        <div class="container">
-            <h2 class="section-title">Intermediate Course</h2>
-            <div class="course-content">
-                <p>This course is designed for those who want to take their kayaking to the next level. Here you will learn how to navigate wild water, master more advanced wild water techniques, and improve your Eskimo roll to perfection.</p>
-                <br>
-                <ul>
-                    <li>More advanced techniques</li>
-                    <li>Reading river currents and rapids</li>
-                    <li>Eskimo roll techniques</li>
-                    <li>Basic rescue skills</li>
-                </ul>
-                <p>Duration: 1 - 3 days, 3 hours per seasion | Location: Soča river; Golobar to Čezsoča | Price: Contact for details</p>
-            </div>
-                <div class="course-gallery">
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo3.jpeg" alt="Intermediate Course 1"></a>
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo4.jpeg" alt="Intermediate Course 2"></a>
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo5.jpeg" alt="Intermediate Course 3"></a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== ADVANCED COURSE SECTION ===== -->
-    <section id="advanced-course">
-        <div class="container">
-            <h2 class="section-title">Advanced Course</h2>
-            <div class="course-content">
-                <p>The advanced course is for those who want to experience the extreme side of kayaking. You will be crossing Class III to IV wild water, learning rescue techniques, and improving your wild water skills.</p>
-                <br>
-                <ul>
-                    <li>High-level river running</li>
-                    <li>Advanced rescue and safety techniques</li>
-                    <li>Scouting and route planning</li>
-                    <li>Extreme kayaking maneuvers</li>
-                </ul>
-                <p>Duration: 3 days 3 - 4 hours per session | Location:  Soča river; Srpenica to Trnovo 1 or 2 | Price: Contact for details</p>
-            </div>
-             <div>
-                <div class="course-gallery">
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo17.jpeg" alt="Advanced Course 1"></a>
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo6.jpeg" alt="Advanced Course 2"></a>
-                    <a href="https://www.youtube.com/channel/UCcxJ2rhfN7QK9qMV3Ss_9nw" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo11.jpeg" alt="Advanced Course 3"></a>
-            </div>
-        </div>
-
-        </div>
-    </section>
     <!-- ===== ABOUT ME SECTION ===== -->
     <section id="about">
         <div class="container">
             <div class="about-wrapper">
                     <!-- Replace with your photo -->
-                    <img src="Photos/Photo16.jpeg" 
-                         alt="About Me">
+                    <a href="https://www.youtube.com/@markopetek" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo26.JPG" alt="About me"></a> 
                 
                 <div class="about-text">
                     <h3>Hello, I'm Marko Petek</h3>
@@ -1133,6 +325,9 @@
             <a href="https://youtu.be/vqTtS8l9Da8" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo22.jpeg" alt="Gallery Image 7"></a>
             <a href="https://youtu.be/yec0uYUoVp8" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo10.jpeg" alt="Gallery Image 8"></a>
             <a href="https://youtu.be/5HwrYJM_GTM" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo23.jpeg" alt="Gallery Image 9"></a>
+            <a href="https://youtu.be/yeuCRuDP2rY" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo30.jpg" alt="Gallery Image 9"></a>
+            <a href="https://youtu.be/ZVJ8n0wSzTo" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo32.jpeg" alt="Gallery Image 9"></a>
+            <a href="https://youtu.be/teNHdyzeTqk" class="gallery-link" target="_blank" rel="noopener noreferrer"><img src="Photos/Photo31.jpg" alt="Gallery Image 9"></a>
         </div>
     </section>
 
@@ -1144,28 +339,24 @@
             <div class="contact-wrapper">
                 <div class="contact-info">
                     <div class="contact-item">
-                        <div class="contact-icon">📧</div>
                         <div class="contact-details">
                             <h4>Email</h4>
                             <a href="mailto:marko.petek88@gmail.com">marko.petek88@gmail.com</a>
                         </div>
                     </div>
                     <div class="contact-item">
-                        <div class="contact-icon">📱</div>
                         <div class="contact-details">
                             <h4>Phone</h4>
                             <p>+386 41 875 208</p>
                         </div>
                     </div>
                     <div class="contact-item">
-                        <div class="contact-icon">📍</div>
                         <div class="contact-details">
                             <h4>Location</h4>
                             <p>Bovec, Slovenia</p>
                         </div>
                     </div>
                     <div class="contact-item">
-                        <div class="contact-icon">💬</div>
                         <div class="contact-details">
                             <h4>Social</h4>
                             <p>@petekmarko</p>
@@ -1183,17 +374,12 @@
                         <div class="form-group">
                             <textarea rows="4" placeholder="Your Message"></textarea>
                         </div>
-                        <button type="submit" class="submit-btn">Send Message</button>
+                        <button type="submit" class="submit-btn glass-btn">Send Message</button>
                     </form>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- ===== FOOTER ===== -->
-    <footer>
-        <p>2026 Marko Petek</p>
-    </footer>
 
     <!-- Simple JavaScript -->
     <script>
@@ -1242,6 +428,28 @@
             }
         });
     });
+</script>
+<script>
+    // Mobile menu toggle
+    (function(){
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        const headerEl = document.getElementById('homepageHeader');
+        if(!menuBtn || !headerEl) return;
+        menuBtn.addEventListener('click', function(){
+            const isOpen = headerEl.classList.toggle('open');
+            menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        // Close menu when a nav link is clicked (mobile)
+        document.querySelectorAll('.header-nav .nav-link').forEach(link=>{
+            link.addEventListener('click', ()=>{
+                if(headerEl.classList.contains('open')){
+                    headerEl.classList.remove('open');
+                    menuBtn.setAttribute('aria-expanded','false');
+                }
+            });
+        });
+    })();
 </script>
 
 </body>
