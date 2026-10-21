@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cutroom — the 360° video editor</title>
+<meta name="description" content="Cutroom is a 360° video editor for footage shot in the thick of it. Point the camera anywhere after the fact, keyframe the view, export the shot.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta property="og:title" content="Cutroom — the 360° video editor">
+<meta property="og:description" content="Shoot everything. Choose the angle later.">
+<meta property="og:image" content="assets/img/soca-drop.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0f11; --bg2:#141518; --panel:#1b1c1f; --line:#2a2b30; --line2:#34353a;
+  --ink:#eceae4; --mute:#9a9a96; --dim:#6b6b68;
+  --blue:#4c6aa0; --teal:#2e9e8a; --amber:#f2b33d; --violet:#8b7be8;
+  --sans:"Inter Tight",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  --gut:clamp(16px,4vw,56px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{background:var(--bg);overflow-x:clip}
+img,video,canvas{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--amber);color:#111}
+
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.wrap{padding-inline:var(--gut);max-width:1440px;margin-inline:auto}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:14px var(--gut);transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(14,15,17,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:-.03em}
+.brand img{width:30px;height:30px}
+.nav ul{display:flex;gap:28px;list-style:none;font-size:14px;color:var(--mute)}
+.nav ul a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:12px 20px;font-weight:600;font-size:14px;
+  background:var(--ink);color:#111;transition:transform .2s,background .2s}
+.btn:hover{transform:translateY(-1px);background:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.btn.ghost:hover{background:rgba(255,255,255,.06)}
+.btn .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+@media (max-width:760px){.nav ul{display:none}.nav .btn{padding:9px 14px}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;cursor:grab;touch-action:pan-y}
+.hero:active{cursor:grabbing}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(14,15,17,.55) 0%,rgba(14,15,17,0) 22%,rgba(14,15,17,0) 45%,rgba(14,15,17,.92) 100%)}
+.hero-copy{position:absolute;z-index:2;left:var(--gut);right:var(--gut);bottom:clamp(28px,7vh,80px);pointer-events:none;
+  display:grid;grid-template-columns:1fr auto;align-items:end;gap:32px}
+.hero h1{font-weight:900;font-size:clamp(48px,10.5vw,168px);line-height:.86;letter-spacing:-.055em}
+.hero h1 span{display:block}
+.hero h1 .o{color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+.hero-side{max-width:340px;pointer-events:auto}
+.hero-side p{color:#cfcdc6;font-size:17px;line-height:1.5;margin-bottom:22px}
+.hero-side .row{display:flex;gap:10px;flex-wrap:wrap}
+.drag-hint{position:absolute;z-index:2;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;
+  padding:10px 16px;border-radius:999px;background:rgba(14,15,17,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.14);pointer-events:none;transition:opacity .6s}
+.drag-hint.gone{opacity:0}
+.drag-hint svg{width:22px;height:22px;animation:sway 2.4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.hud{position:absolute;z-index:2;top:84px;right:var(--gut);text-align:right;pointer-events:none;line-height:1.9;color:#d8d6cf;
+  padding:10px 14px;border-radius:10px;background:rgba(14,15,17,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
+.hud b{color:var(--amber);font-weight:500}
+@media (max-width:860px){.hero-copy{grid-template-columns:1fr}.hud{display:none}}
+
+/* ---------- marquee ---------- */
+.ticker{border-block:1px solid var(--line);overflow:hidden;padding:18px 0;background:var(--bg)}
+.ticker-track{display:flex;gap:48px;width:max-content;animation:tick 38s linear infinite}
+.ticker-track span{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap;display:flex;align-items:center;gap:48px}
+.ticker-track span::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--amber)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- statement ---------- */
+.statement{padding:clamp(100px,18vh,200px) 0}
+.statement p{font-weight:800;font-size:clamp(32px,5.4vw,84px);line-height:1.02;letter-spacing:-.045em;max-width:16ch}
+.statement p .w{opacity:.14;transition:opacity .25s}
+.statement p .w.on{opacity:1}
+.statement p .hl{color:var(--amber)}
+.statement .mono{margin-bottom:28px;display:block}
+
+/* ---------- reframe (sticky) ---------- */
+.reframe{position:relative;height:460vh}
+.reframe-stick{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(260px,.8fr) 1.6fr;gap:clamp(24px,4vw,64px);
+  align-items:center;padding:80px var(--gut) 32px;max-width:1600px;margin-inline:auto}
+.steps{position:relative;min-height:300px}
+.step{position:absolute;inset:0;opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
+.step.on{opacity:1;transform:none}
+.step .mono{color:var(--amber);margin-bottom:18px;display:block}
+.step h2{font-weight:900;font-size:clamp(36px,4.6vw,72px);line-height:.92;letter-spacing:-.05em;margin-bottom:20px}
+.step p{color:var(--mute);font-size:17px;line-height:1.55;max-width:36ch}
+.progress-dots{display:flex;gap:8px;margin-top:28px;position:absolute;bottom:-56px}
+.progress-dots i{width:28px;height:3px;border-radius:2px;background:var(--line2);transition:background .3s}
+.progress-dots i.on{background:var(--ink)}
+
+.editor{background:var(--panel);border:1px solid var(--line2);border-radius:18px;overflow:hidden;box-shadow:0 40px 120px -40px rgba(0,0,0,.8)}
+.ed-bar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ed-bar i{width:11px;height:11px;border-radius:50%;background:#3a3b40}
+.ed-bar .mono{margin-left:auto;font-size:11px;letter-spacing:.08em}
+.ed-view{position:relative;aspect-ratio:16/9;background:#000}
+.ed-view canvas{position:absolute;inset:0;width:100%;height:100%}
+.ed-tag{position:absolute;left:14px;top:14px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.55);font-family:var(--mono);font-size:11px;color:#ddd;letter-spacing:.06em}
+.ed-safe{position:absolute;inset:9%;border:1px dashed rgba(255,255,255,.22);border-radius:6px;pointer-events:none;transition:opacity .4s}
+.ed-time{padding:14px 16px 18px;border-top:1px solid var(--line)}
+.ed-params{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.ed-params b{color:var(--ink);font-weight:500}
+.track{position:relative;height:30px;border-radius:7px;margin-bottom:8px;overflow:hidden}
+.track.video{background:linear-gradient(90deg,var(--blue),#5a78ad 40%,var(--teal));opacity:.9}
+.track.video::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 58px,rgba(0,0,0,.25) 58px 60px)}
+.track.cam{background:#24252a;height:22px;overflow:visible}
+.track.cam .line{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--violet);opacity:.35}
+.kf{position:absolute;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;transform:rotate(45deg) scale(.4);background:var(--violet);
+  border:2px solid var(--panel);opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .3s}
+.kf.on{transform:rotate(45deg) scale(1);opacity:1}
+.track.audio{height:18px;background:#202125;
+  background-image:repeating-linear-gradient(90deg,#3c3d43 0 2px,transparent 2px 5px);mask-image:linear-gradient(0deg,#000,#000)}
+.timeline{position:relative}
+.playhead{position:absolute;top:-6px;bottom:-4px;width:2px;background:var(--amber);border-radius:2px;left:0;box-shadow:0 0 12px rgba(242,179,61,.6)}
+.playhead::before{content:"";position:absolute;top:-4px;left:-5px;width:12px;height:8px;border-radius:2px;background:var(--amber)}
+@media (max-width:900px){
+  .reframe{height:420vh}
+  .reframe-stick{grid-template-columns:1fr;align-content:center;gap:24px;padding-top:72px}
+  .steps{min-height:190px;order:2}
+  .step h2{font-size:34px;margin-bottom:12px}
+  .step p{font-size:15px}
+  .progress-dots{display:none}
+  .ed-params{display:none}
+}
+
+/* ---------- gallery (horizontal) ---------- */
+.gallery{position:relative}
+.gal-stick{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.gal-head{display:flex;justify-content:space-between;align-items:end;gap:24px;padding:0 var(--gut);margin-bottom:clamp(20px,4vh,40px)}
+.gal-head h2{font-weight:900;font-size:clamp(40px,6vw,96px);line-height:.88;letter-spacing:-.05em}
+.gal-head p{max-width:34ch;color:var(--mute);line-height:1.5}
+.gal-track{display:flex;gap:18px;padding-left:var(--gut);will-change:transform}
+.card{position:relative;flex:none;height:min(62vh,640px);border-radius:16px;overflow:hidden;background:var(--panel)}
+.card img{height:100%;width:auto;object-fit:cover;transform:scale(1.08);transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.card:hover img{transform:scale(1.02)}
+.card figcaption{position:absolute;left:14px;bottom:14px;right:14px;display:flex;justify-content:space-between;align-items:end;gap:10px}
+.card figcaption b{font-weight:800;font-size:20px;letter-spacing:-.03em;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.card figcaption span{font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.card.circle img{object-fit:cover}
+.gal-end{flex:none;width:min(70vw,420px);display:flex;flex-direction:column;justify-content:center;padding-right:var(--gut)}
+.gal-end p{font-weight:800;font-size:clamp(26px,3vw,40px);letter-spacing:-.04em;line-height:1.02}
+@media (max-width:700px){.gal-head{flex-direction:column;align-items:start}.card{height:52vh}}
+
+/* ---------- features ---------- */
+.features{padding:clamp(90px,14vh,160px) 0}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:48px;flex-wrap:wrap}
+.sec-head h2{font-weight:900;font-size:clamp(40px,6vw,96px);line-height:.88;letter-spacing:-.05em;max-width:12ch}
+.sec-head p{max-width:38ch;color:var(--mute);line-height:1.55}
+.bento{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(220px,auto);gap:14px}
+.tile{position:relative;border:1px solid var(--line);background:var(--bg2);border-radius:18px;padding:26px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;min-height:240px}
+.tile h3{font-weight:800;font-size:24px;letter-spacing:-.035em;margin-bottom:8px;position:relative}
+.tile p{color:var(--mute);line-height:1.5;font-size:15px;max-width:40ch;position:relative}
+.tile .mono{position:absolute;top:24px;left:26px}
+.t-a{grid-column:span 4;grid-row:span 2}
+.t-b{grid-column:span 2;grid-row:span 2}
+.t-c,.t-d,.t-e{grid-column:span 2}
+.tile.photo{color:#fff}
+.tile.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.tile.photo:hover img{transform:scale(1.04)}
+.tile.photo::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.82))}
+.tile.photo h3,.tile.photo p,.tile.photo .mono{z-index:2}
+.tile.photo p{color:#d8d6cf}
+.planet{position:absolute;top:22px;right:22px;width:46%;aspect-ratio:1;border-radius:50%;overflow:hidden;border:1px solid var(--line2)}
+.planet canvas{width:100%;height:100%}
+.glyph{position:absolute;top:24px;right:24px;width:64px;height:64px}
+.horizon{position:absolute;inset:24px 24px auto auto;width:120px;height:72px;border-radius:10px;border:1px solid var(--line2);overflow:hidden}
+.horizon i{position:absolute;left:-30%;right:-30%;top:50%;height:50%;background:var(--teal);opacity:.7;animation:tilt 4s ease-in-out infinite}
+.horizon i::before{content:"";position:absolute;left:0;right:0;top:-100%;height:100%;background:var(--blue);opacity:.7}
+.horizon b{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--amber)}
+@keyframes tilt{0%,100%{transform:rotate(-9deg)}20%,80%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+@media (max-width:900px){.bento{grid-template-columns:1fr}.t-a,.t-b,.t-c,.t-d,.t-e{grid-column:auto;grid-row:auto}.t-a{min-height:440px}.t-b{min-height:380px}}
+
+/* ---------- workflow ---------- */
+.flow{padding-bottom:clamp(90px,14vh,160px)}
+.flow-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.flow-item{padding:34px 28px 10px 0;border-right:1px solid var(--line);margin-right:28px}
+.flow-item:last-child{border-right:0}
+.flow-item .n{font-family:var(--mono);color:var(--amber);font-size:13px;margin-bottom:60px;display:block}
+.flow-item h3{font-weight:800;font-size:clamp(28px,3vw,42px);letter-spacing:-.045em;margin-bottom:12px}
+.flow-item p{color:var(--mute);line-height:1.55;max-width:32ch}
+@media (max-width:800px){.flow-grid{grid-template-columns:1fr}.flow-item{border-right:0;border-bottom:1px solid var(--line);margin-right:0;padding-bottom:30px}.flow-item .n{margin-bottom:24px}}
+
+/* ---------- cta ---------- */
+.cta{position:relative;min-height:110svh;display:flex;align-items:flex-end;overflow:hidden}
+.cta-bg{position:absolute;inset:-10% 0;background:url(assets/img/waterfall.webp) center/cover no-repeat;will-change:transform}
+.cta::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,.2) 30%,rgba(14,15,17,.35) 60%,rgba(14,15,17,.95) 100%)}
+.cta-in{position:relative;z-index:2;width:100%;padding-bottom:clamp(40px,10vh,110px)}
+.cta h2{font-weight:900;font-size:clamp(56px,13vw,220px);line-height:.82;letter-spacing:-.06em;margin-bottom:36px}
+.cta-row{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
+.cta-row p{max-width:40ch;color:#d4d2cb;font-size:18px;line-height:1.5}
+
+footer{border-top:1px solid var(--line);padding:28px 0 40px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer .brand{font-size:16px}
+footer .brand img{width:24px;height:24px}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(40px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .ticker-track,.horizon i,.drag-hint svg{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Cutroom</a>
+  <ul>
+    <li><a href="#reframe">Reframe</a></li>
+    <li><a href="#gallery">Footage</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+  </ul>
+  <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="heroGL" aria-label="Interactive 360° kayaking video. Drag to look around."></canvas>
+  <div class="hud mono">
+    <div>Source <b>GoPro MAX · .360</b></div>
+    <div>Yaw <b id="hudYaw">000°</b> · Pitch <b id="hudPitch">00°</b></div>
+    <div>Mode <b>Live 360°</b></div>
+  </div>
+  <div class="drag-hint mono" id="dragHint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
+    Drag to look around
+  </div>
+  <div class="hero-copy">
+    <h1><span>Shoot it all.</span><span class="o">Cut it later.</span></h1>
+    <div class="hero-side">
+      <p>Cutroom is the 360° video editor for footage shot in the thick of it. Point the camera anywhere, after the fact.</p>
+      <div class="row">
+        <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
+        <a href="#reframe" class="btn ghost">See how it works</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>Reframe after the fact</span><span>Keyframed camera paths</span><span>Tiny planet</span><span>Horizon lock</span><span>GoPro MAX .360</span><span>Insta360</span><span>4K flat export</span><span>360° export</span>
+    <span>Reframe after the fact</span><span>Keyframed camera paths</span><span>Tiny planet</span><span>Horizon lock</span><span>GoPro MAX .360</span><span>Insta360</span><span>4K flat export</span><span>360° export</span>
+  </div>
+</div>
+
+<section class="statement wrap">
+  <span class="mono">// 01 — Why 360</span>
+  <p id="statement">On the river you don't get a second take. So stop aiming the camera — <span class="hl">record every direction</span> and pick the shot in Cutroom.</p>
+</section>
+
+<section class="reframe" id="reframe">
+  <div class="reframe-stick">
+    <div class="steps">
+      <div class="step on" data-step="0">
+        <span class="mono">02 — Look anywhere</span>
+        <h2>The camera points where you want. Later.</h2>
+        <p>Your 360° clip holds every angle at once. Drag the view to find the line, the boof, the face of the friend behind you.</p>
+      </div>
+      <div class="step" data-step="1">
+        <span class="mono">03 — Keyframe the view</span>
+        <h2>Direct the shot like a camera op.</h2>
+        <p>Drop keyframes on the timeline and Cutroom eases the camera between them: pans, tilts and punch-ins, all from one helmet cam.</p>
+      </div>
+      <div class="step" data-step="2">
+        <span class="mono">04 — Bend the projection</span>
+        <h2>Then turn the river into a planet.</h2>
+        <p>Slide from flat to fisheye to tiny planet in one continuous move. It's a keyframe like any other.</p>
+      </div>
+      <div class="progress-dots"><i class="on"></i><i></i><i></i></div>
+    </div>
+
+    <div class="editor">
+      <div class="ed-bar"><i></i><i></i><i></i><span class="mono">norway_creek_drop.360 — Cutroom</span></div>
+      <div class="ed-view">
+        <canvas id="edGL"></canvas>
+        <div class="ed-safe" id="edSafe"></div>
+        <div class="ed-tag" id="edTag">VIEW · Rectilinear</div>
+      </div>
+      <div class="ed-time">
+        <div class="ed-params">
+          <span>YAW <b id="pYaw">0°</b></span><span>PITCH <b id="pPitch">0°</b></span><span>FOV <b id="pFov">90°</b></span><span>PROJ <b id="pProj">Flat</b></span><span>TC <b id="pTc">00:00:00</b></span>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="track video"></div>
+          <div class="track cam" id="camTrack"><div class="line"></div></div>
+          <div class="track audio"></div>
+          <div class="playhead" id="playhead"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gallery" id="gallery">
+  <div class="gal-stick">
+    <div class="gal-head">
+      <h2 class="rv">Made for<br>wet footage.</h2>
+      <p class="rv">Spray on the lens, a pink boat in the frame, a waterfall in the background. The kind of footage Cutroom was built for.</p>
+    </div>
+    <div class="gal-track" id="galTrack">
+      <figure class="card"><img src="assets/img/soca-drop.webp" alt="Kayaker in a yellow boat dropping over a ledge into turquoise water" loading="lazy"><figcaption><b>The ledge</b><span>4K · flat</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/gorge-cave.webp" alt="Kayaker paddling through a dark, mossy gorge toward the light" loading="lazy"><figcaption><b>Into the gorge</b><span>low light</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/norway-tier.webp" alt="Kayaker running a multi-tier waterfall while a safety paddler watches" loading="lazy"><figcaption><b>Two tiers</b><span>safety cam</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/fisheye.webp" alt="Top-down fisheye view of a kayaker in a red boat in whitewater" loading="lazy"><figcaption><b>Crystal ball</b><span>projection</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/pink-falls.webp" alt="Kayaker in a pink boat paddling through a steep slide" loading="lazy"><figcaption><b>The slide</b><span>keyframed</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/soca-boof.webp" alt="Kayaker in a pink boat boofing between white limestone rocks" loading="lazy"><figcaption><b>Boof</b><span>reframed</span></figcaption></figure>
+      <figure class="card"><img src="assets/img/celebrate.webp" alt="Three kayakers celebrating at the bottom of a waterfall" loading="lazy"><figcaption><b>Clean lines</b><span>the crew</span></figcaption></figure>
+      <div class="gal-end"><p>Every one of these angles could come from a single 360° clip.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="features wrap" id="features">
+  <div class="sec-head">
+    <h2 class="rv">Everything the cut needs.</h2>
+    <p class="rv">A focused toolset for spherical footage, with no 3D software degree required.</p>
+  </div>
+  <div class="bento">
+    <article class="tile photo t-a rv">
+      <img src="assets/img/soca-boof.webp" alt="" loading="lazy">
+      <span class="mono">Reframe</span>
+      <h3>One camera, every angle</h3>
+      <p>Turn a single 360° recording into a multi-cam edit. Cut between the forward line, your paddle and the crew behind you without ever touching a second camera.</p>
+    </article>
+    <article class="tile t-b rv">
+      <div class="planet"><canvas id="planetGL"></canvas></div>
+      <span class="mono">Projections</span>
+      <h3>Tiny planet &amp; crystal ball</h3>
+      <p>Flat, fisheye, little planet and everything between, animated smoothly on the timeline.</p>
+    </article>
+    <article class="tile t-c rv">
+      <div class="horizon"><i></i><b></b></div>
+      <span class="mono">Stabilize</span>
+      <h3>Horizon lock</h3>
+      <p>Keep the world level while the boat rolls, flips and surfs.</p>
+    </article>
+    <article class="tile t-d rv">
+      <svg class="glyph" viewBox="0 0 64 64" fill="none" stroke-width="2"><rect x="6" y="14" width="52" height="36" rx="7" stroke="#4c6aa0"/><path d="M18 32h28M38 24l8 8-8 8" stroke="#f2b33d" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="mono">Import</span>
+      <h3>Native camera files</h3>
+      <p>Drop in GoPro MAX .360 and Insta360 footage straight off the card. No pre-stitching step.</p>
+    </article>
+    <article class="tile t-e rv">
+      <svg class="glyph" viewBox="0 0 64 64" fill="none" stroke-width="2"><rect x="10" y="10" width="20" height="36" rx="4" stroke="#8b7be8"/><rect x="34" y="18" width="22" height="13" rx="3" stroke="#2e9e8a"/><rect x="34" y="35" width="22" height="13" rx="3" stroke="#4c6aa0"/></svg>
+      <span class="mono">Export</span>
+      <h3>Any shape out</h3>
+      <p>Vertical for reels, 16:9 for the edit, or full 360° for YouTube and VR.</p>
+    </article>
+  </div>
+</section>
+
+<section class="flow wrap" id="workflow">
+  <div class="sec-head">
+    <h2 class="rv">Card to cut in three moves.</h2>
+  </div>
+  <div class="flow-grid">
+    <div class="flow-item rv"><span class="n">01 / Import</span><h3>Drop the clip</h3><p>Straight from the camera. Cutroom reads the spherical file and gives you a live 360° preview instantly.</p></div>
+    <div class="flow-item rv"><span class="n">02 / Direct</span><h3>Find the shot</h3><p>Look around, set keyframes, pick a projection. The timeline remembers where the camera should be.</p></div>
+    <div class="flow-item rv"><span class="n">03 / Export</span><h3>Send it</h3><p>Render a flat edit in any aspect ratio, or a reframed 360° video that still lets viewers look around.</p></div>
+  </div>
+</section>
+
+<section class="cta" id="get">
+  <div class="cta-bg" id="ctaBg"></div>
+  <div class="cta-in wrap">
+    <h2 class="rv">Go film<br>everything.</h2>
+    <div class="cta-row">
+      <p class="rv">Cutroom is coming soon. Get early access and be first in line when it launches.</p>
+      <a href="mailto:hello@example.com?subject=Cutroom%20early%20access" class="btn rv"><span class="dot"></span>Get early access</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Cutroom</a>
+    <span class="mono">© 2026 Cutroom · 360° video, cut properly</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const deg = r => Math.round(r * 180 / Math.PI);
+
+/* ---------- 360 renderer: equirectangular source, rectilinear → stereographic ---------- */
+const VS = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
+const FS = `precision highp float;
+uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,scale,dist;
+void main(){
+  vec2 p=gl_FragCoord.xy/res*2.-1.;p.x*=res.x/res.y;p*=scale;
+  vec3 D=normalize(vec3(p,-1.));vec3 O=vec3(0.,0.,dist);
+  float b=dot(O,D),c=dot(O,O)-1.;
+  vec3 q=O+(-b+sqrt(max(b*b-c,0.)))*D;
+  float cp=cos(pitch),sp=sin(pitch);q=vec3(q.x,q.y*cp-q.z*sp,q.y*sp+q.z*cp);
+  float cy=cos(yaw),sy=sin(yaw);q=vec3(q.x*cy+q.z*sy,q.y,-q.x*sy+q.z*cy);
+  vec2 uv=vec2(.5+atan(q.x,-q.z)/6.2831853,.5-asin(clamp(q.y,-1.,1.))/3.1415927);
+  gl_FragColor=texture2D(tex,uv);
+}`;
+
+function Sphere(canvas, src, poster) {
+  const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false });
+  const view = { yaw: 0, pitch: 0, scale: .9, dist: 0 };
+  if (!gl) { canvas.style.background = `url(${poster}) center/cover`; return { view, setActive() {} }; }
+  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(pr); gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const U = n => gl.getUniformLocation(pr, n);
+  const u = { res: U('res'), yaw: U('yaw'), pitch: U('pitch'), scale: U('scale'), dist: U('dist') };
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([20, 21, 24, 255]));
+  for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]])
+    gl.texParameteri(gl.TEXTURE_2D, k, v);
+
+  const img = new Image();
+  img.onload = () => { if (!videoReady) { gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); } };
+  img.src = poster;
+
+  const video = document.createElement('video');
+  Object.assign(video, { src, muted: true, loop: true, playsInline: true, preload: 'auto' });
+  video.setAttribute('playsinline', ''); video.setAttribute('muted', '');
+  let videoReady = false, active = false;
+  video.addEventListener('playing', () => videoReady = true);
+
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  }
+  function draw() {
+    if (active) requestAnimationFrame(draw);
+    resize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (videoReady && video.readyState >= 2) {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+    }
+    gl.uniform2f(u.res, canvas.width, canvas.height);
+    gl.uniform1f(u.yaw, view.yaw); gl.uniform1f(u.pitch, view.pitch);
+    gl.uniform1f(u.scale, view.scale); gl.uniform1f(u.dist, view.dist);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    api.onFrame && api.onFrame(video);
+  }
+  const api = {
+    view, video,
+    setActive(on) {
+      if (on === active) return;
+      active = on;
+      if (on) { video.play().catch(() => {}); requestAnimationFrame(draw); }
+      else video.pause();
+    }
+  };
+  // pause when off-screen so only visible players decode
+  new IntersectionObserver(([e]) => api.setActive(e.isIntersecting), { rootMargin: '100px' }).observe(canvas);
+  return api;
+}
+
+/* ---------- hero: drag to look ---------- */
+const hero = document.querySelector('.hero');
+const H = Sphere(document.getElementById('heroGL'), 'assets/360/gorge.mp4', 'assets/360/gorge.jpg');
+H.view.scale = innerWidth < 700 ? 1.05 : .78;
+let drag = null, vy = 0, vp = 0, idle = 0;
+const hint = document.getElementById('dragHint');
+hero.addEventListener('pointerdown', e => {
+  if (e.target.closest('a')) return;
+  drag = { x: e.clientX, y: e.clientY }; hint.classList.add('gone'); hero.setPointerCapture(e.pointerId);
+});
+hero.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const k = 2.2 * H.view.scale / hero.clientHeight;
+  vy = -(e.clientX - drag.x) * k; vp = (e.clientY - drag.y) * k;
+  drag = { x: e.clientX, y: e.clientY };
+  H.view.yaw += vy; H.view.pitch = clamp(H.view.pitch + vp, -1.3, 1.3);
+});
+const endDrag = () => { drag = null; idle = 0; };
+hero.addEventListener('pointerup', endDrag); hero.addEventListener('pointercancel', endDrag);
+const hudYaw = document.getElementById('hudYaw'), hudPitch = document.getElementById('hudPitch');
+H.onFrame = () => {
+  if (!drag) {
+    vy *= .94; vp *= .94; idle++;
+    H.view.yaw += vy + (reduced ? 0 : Math.min(idle / 240, 1) * .0009);
+    H.view.pitch = clamp(H.view.pitch + vp, -1.3, 1.3);
+    if (idle > 120) H.view.pitch *= .99;
+  }
+  const y = ((deg(H.view.yaw) % 360) + 360) % 360;
+  hudYaw.textContent = String(y).padStart(3, '0') + '°';
+  hudPitch.textContent = (H.view.pitch < 0 ? '−' : '') + String(Math.abs(deg(H.view.pitch))).padStart(2, '0') + '°';
+};
+
+/* ---------- editor: scroll-driven camera ---------- */
+const E = Sphere(document.getElementById('edGL'), 'assets/360/drop.mp4', 'assets/360/drop.jpg');
+const reframe = document.getElementById('reframe');
+const steps = [...document.querySelectorAll('.step')], dots = [...document.querySelectorAll('.progress-dots i')];
+const camTrack = document.getElementById('camTrack'), playhead = document.getElementById('playhead');
+const edTag = document.getElementById('edTag'), edSafe = document.getElementById('edSafe');
+const P = id => document.getElementById(id);
+// keyframes along scroll progress: [t, yaw°, pitch°, scale, dist]
+const KF = [
+  [0.00,   0,   -8, .62, 0],
+  [0.14,  70,   -4, .70, 0],
+  [0.28, 180,    0, .78, 0],
+  [0.40, 250,  -14, .66, 0],
+  [0.52, 330,  -22, .42, 0],
+  [0.64, 360,   -6, .95, 0],
+  [0.80, 380,  -60, 1.6, .6],
+  [1.00, 400,  -90, 3.6, 1],
+];
+KF.forEach(k => { const d = document.createElement('i'); d.className = 'kf'; d.style.left = (k[0] * 100) + '%'; camTrack.appendChild(d); k.el = d; });
+let scrollT = 0;
+function sampleKF(t) {
+  let i = 0; while (i < KF.length - 2 && t > KF[i + 1][0]) i++;
+  const a = KF[i], b = KF[i + 1], f = ease(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
+  return [1, 2, 3, 4].map(j => lerp(a[j], b[j], f));
+}
+E.onFrame = video => {
+  const [y, p, s, d] = sampleKF(scrollT);
+  const v = E.view;
+  v.yaw = lerp(v.yaw, y * Math.PI / 180, .18); v.pitch = lerp(v.pitch, p * Math.PI / 180, .18);
+  v.scale = lerp(v.scale, s, .18); v.dist = lerp(v.dist, d, .18);
+  const fov = deg(2 * Math.atan(v.scale)) ;
+  P('pYaw').textContent = ((deg(v.yaw) % 360) + 360) % 360 + '°';
+  P('pPitch').textContent = deg(v.pitch) + '°';
+  P('pFov').textContent = fov + '°';
+  P('pProj').textContent = v.dist < .15 ? 'Flat' : v.dist < .8 ? 'Fisheye' : 'Tiny planet';
+  edTag.textContent = 'VIEW · ' + (v.dist < .15 ? 'Rectilinear' : v.dist < .8 ? 'Fisheye' : 'Little planet');
+  if (video.duration) {
+    const s = video.currentTime, f = Math.floor((s % 1) * 30);
+    P('pTc').textContent = `00:${String(Math.floor(s)).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
+  }
+};
+function onReframeScroll() {
+  const r = reframe.getBoundingClientRect();
+  scrollT = clamp(-r.top / (r.height - innerHeight), 0, 1);
+  const s = scrollT < .3 ? 0 : scrollT < .64 ? 1 : 2;
+  steps.forEach((el, i) => el.classList.toggle('on', i === s));
+  dots.forEach((el, i) => el.classList.toggle('on', i <= s));
+  KF.forEach(k => k.el.classList.toggle('on', scrollT >= k[0] - .001 && scrollT > 0.002 || k[0] === 0));
+  playhead.style.left = (scrollT * 100) + '%';
+  edSafe.style.opacity = scrollT > .7 ? 0 : 1;
+}
+
+/* ---------- small tiny-planet tile ---------- */
+const T = Sphere(document.getElementById('planetGL'), 'assets/360/gorge.mp4', 'assets/360/gorge.jpg');
+Object.assign(T.view, { pitch: -Math.PI / 2, scale: 2.4, dist: 1 });
+T.onFrame = () => { if (!reduced) T.view.yaw += .004; };
+
+/* ---------- statement word reveal ---------- */
+const st = document.getElementById('statement');
+(function split(node) {
+  [...node.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(w => {
+        if (!w.trim()) { frag.appendChild(document.createTextNode(w)); return; }
+        const s = document.createElement('span'); s.className = 'w'; s.textContent = w; frag.appendChild(s);
+      });
+      n.replaceWith(frag);
+    } else split(n);
+  });
+})(st);
+const words = [...st.querySelectorAll('.w')];
+function onStatement() {
+  const r = st.getBoundingClientRect();
+  const t = clamp((innerHeight * .85 - r.top) / (r.height + innerHeight * .35), 0, 1);
+  const n = Math.round(t * words.length);
+  words.forEach((w, i) => w.classList.toggle('on', i < n));
+}
+
+/* ---------- horizontal gallery ---------- */
+const gal = document.getElementById('gallery'), track = document.getElementById('galTrack');
+function sizeGallery() {
+  const extra = Math.max(0, track.scrollWidth - innerWidth);
+  gal.style.height = (innerHeight + extra) + 'px';
+}
+function onGallery() {
+  const r = gal.getBoundingClientRect();
+  const extra = Math.max(0, track.scrollWidth - innerWidth);
+  const t = clamp(-r.top / Math.max(1, r.height - innerHeight), 0, 1);
+  track.style.transform = `translate3d(${-t * extra}px,0,0)`;
+}
+track.querySelectorAll('img').forEach(i => i.addEventListener('load', () => { sizeGallery(); onGallery(); }));
+
+/* ---------- nav, parallax, reveals ---------- */
+const nav = document.getElementById('nav'), ctaBg = document.getElementById('ctaBg'), cta = document.getElementById('get');
+function onScroll() {
+  nav.classList.toggle('solid', scrollY > innerHeight * .6);
+  onStatement(); onReframeScroll(); onGallery();
+  if (!reduced) {
+    const r = cta.getBoundingClientRect();
+    ctaBg.style.transform = `translate3d(0,${(r.top / innerHeight) * -60}px,0) scale(1.05)`;
+  }
+}
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+let ticking = false;
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { onScroll(); ticking = false; }); } }, { passive: true });
+addEventListener('resize', () => { sizeGallery(); onScroll(); });
+sizeGallery(); onScroll();
+})();
+</script>
+</body>
+</html>
