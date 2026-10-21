@@ -232,7 +232,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .lut-bg img{transition:filter .6s}
 
 /* ---------- showcase (finished exports) ---------- */
-.showcase{position:relative;height:260vh}
+.showcase{position:relative;height:450vh}
 .show-stick{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;align-items:flex-end}
 .show-stick video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}
 .show-stick::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,15,17,.6) 0%,rgba(14,15,17,0) 25%,rgba(14,15,17,0) 55%,rgba(14,15,17,.9) 100%);pointer-events:none}
@@ -243,6 +243,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .show-count{position:absolute;z-index:1;top:88px;left:var(--gut);display:flex;gap:8px}
 .show-count i{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}
 .show-count i b{display:block;height:100%;background:#fff;width:0}
+.show-title{margin-top:18px;font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#d6d4cd}
 @media (max-width:700px){.show-meta{align-items:flex-start}}
 
 /* ---------- workflow ---------- */
@@ -485,17 +486,21 @@ footer .brand img{width:24px;height:24px}
 <!-- made with cutroom -->
 <section class="showcase" id="made">
   <div class="show-stick">
-    <video id="showA" src="assets/video/export_0564.mp4" poster="assets/video/export_0564.jpg" muted loop playsinline preload="metadata"></video>
-    <video id="showB" src="assets/video/export_0555.mp4" poster="assets/video/export_0555.jpg" muted loop playsinline preload="metadata" style="opacity:0"></video>
-    <div class="show-count"><i><b id="barA"></b></i><i><b id="barB"></b></i></div>
+    <video data-src="assets/video/export_0564_4k.mp4" data-sm="assets/video/export_0564.mp4" poster="assets/video/export_0564_4k.jpg" data-title="The gorge" data-in="GS010564.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/norway.mp4" poster="assets/video/norway.jpg" data-title="Ulvaa · Lower Rauma" data-in="GS010435" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" data-title="The waterfall" data-in="GS010038" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/alps_final.mp4" poster="assets/video/alps_final.jpg" data-title="King of the Alps · final run" data-in="FINALRUN" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/export_0555_hq.mp4" poster="assets/video/export_0555_hq.jpg" data-title="The drop" data-in="GS010555.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
+    <div class="show-count" id="showCount"></div>
     <div class="show-copy wrap">
       <div>
         <span class="kicker">Made with Cutroom</span>
         <h2 class="big">Straight out<br>of Cutroom.</h2>
+        <p class="show-title" id="showTitle">The gorge</p>
       </div>
       <div class="show-meta">
         <span class="chip">IN <b id="showIn">GS010564.360</b></span>
-        <span class="chip">OUT <b>16:9 · 4K · 141° FOV</b></span>
+        <span class="chip">OUT <b id="showOut">16:9 · 4K · 141° FOV</b></span>
       </div>
     </div>
   </div>
@@ -804,25 +809,32 @@ lutBtns.forEach(b => b.addEventListener('click', () => {
   $('lutName').textContent = b.textContent;
 }));
 
-/* ---------- showcase: crossfade finished exports ---------- */
-const show = $('made'), vA = $('showA'), vB = $('showB');
+/* ---------- showcase: reel of finished clips, one per scroll step ---------- */
+const show = $('made'), reel = [...show.querySelectorAll('video')];
+show.style.height = (100 + reel.length * 70) + 'vh';
+const bars = reel.map(() => { const i = document.createElement('i'), b = document.createElement('b'); i.appendChild(b); $('showCount').appendChild(i); return b; });
+// load a clip (and the next one) only as the reel approaches it
+const load = v => { if (!v || v.src) return; v.src = (innerWidth < 900 && v.dataset.sm) || v.dataset.src; v.preload = 'auto'; };
+inView(show, on => { if (on) { load(reel[0]); load(reel[1]); } }, '900px');
+reel.forEach((v, i) => v.style.opacity = i ? 0 : 1);
 let showVisible = false, showIdx = -1;
 inView(show.firstElementChild, on => { showVisible = on; syncShow(); }, '100px');
 function syncShow() {
-  [vA, vB].forEach((v, i) => { if (showVisible && i === showIdx) v.play().catch(() => {}); else v.pause(); });
+  reel.forEach((v, i) => { if (showVisible && i === showIdx) v.play().catch(() => {}); else v.pause(); });
 }
 function onShow() {
   const r = show.getBoundingClientRect();
-  const t = clamp(-r.top / (r.height - innerHeight), 0, 1);
-  const idx = t < .5 ? 0 : 1;
+  const t = clamp(-r.top / (r.height - innerHeight), 0, .9999) * reel.length;
+  const idx = Math.floor(t);
   if (idx !== showIdx) {
     showIdx = idx;
-    vB.style.opacity = idx; vA.style.opacity = 1 - idx;
-    $('showIn').textContent = idx ? 'GS010555.360' : 'GS010564.360';
+    load(reel[idx]); load(reel[idx + 1]);
+    reel.forEach((v, i) => v.style.opacity = i === idx ? 1 : 0);
+    const d = reel[idx].dataset;
+    $('showIn').textContent = d.in; $('showOut').textContent = d.out; $('showTitle').textContent = d.title;
     syncShow();
   }
-  $('barA').style.width = clamp(t * 2, 0, 1) * 100 + '%';
-  $('barB').style.width = clamp(t * 2 - 1, 0, 1) * 100 + '%';
+  bars.forEach((b, i) => b.style.width = clamp(t - i, 0, 1) * 100 + '%');
 }
 
 /* ---------- nav, parallax, reveals ---------- */
