@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eli Mlekuž</title>
+    <meta name="description" content="Eli Mlekuž — a scrapbook of elsewhere. Mist, fjords, faraway blues and city lights.">
+    <meta name="theme-color" content="#f3eee6">
+    <meta property="og:title" content="Eli Mlekuž">
+    <meta property="og:description" content="A scrapbook of elsewhere.">
+    <meta property="og:image" content="photos/mist.webp">
+    <link rel="preload" as="image" href="photos/mist.webp" fetchpriority="high">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===== Tokens ===== */
+        :root{
+            --paper:#f3eee6;
+            --ink:#1d1b19;
+            --bg:var(--paper);
+            --fg:var(--ink);
+            --muted:color-mix(in srgb,var(--fg) 55%,transparent);
+            --line:color-mix(in srgb,var(--fg) 18%,transparent);
+            --cornflower:#2f4f9c;   /* the dresses */
+            --plumbago:#a9b9e3;     /* the flowers */
+            --predil:#3fb2ac;       /* the lake */
+            --tassel:#c4231d;       /* the wishes */
+            --night:#0a0e1c;
+            --serif:'Instrument Serif','Times New Roman',serif;
+            --sans:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+            --gutter:clamp(16px,4vw,56px);
+            --ease:cubic-bezier(.2,.8,.2,1);
+        }
+
+        /* ===== Base ===== */
+        *{box-sizing:border-box;margin:0;padding:0}
+        html.lenis,html.lenis body{height:auto}
+        .lenis.lenis-smooth{scroll-behavior:auto!important}
+        body{font-family:var(--sans);background:var(--bg);color:var(--fg);line-height:1.6;overflow-x:clip;-webkit-font-smoothing:antialiased;transition:background-color 1.1s var(--ease),color 1.1s var(--ease)}
+        img{display:block;max-width:100%}
+        a{color:inherit}
+        ::selection{background:var(--cornflower);color:var(--paper)}
+        .label{font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase}
+        .serif{font-family:var(--serif);font-weight:400;line-height:.92;letter-spacing:-.01em}
+        em,.it{font-style:italic}
+
+        /* ===== Grain ===== */
+        .grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:2000;opacity:.09;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            animation:grain 1.2s steps(6) infinite}
+        @keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-4%)}60%{transform:translate(-4%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+        /* ===== Chrome ===== */
+        .chrome{position:fixed;top:0;left:0;right:0;z-index:1500;display:flex;justify-content:space-between;align-items:center;padding:20px var(--gutter);color:#fff;mix-blend-mode:difference;pointer-events:none}
+        .chrome a{pointer-events:auto;text-decoration:none}
+        .chrome .sig{font-family:var(--serif);font-size:22px;font-style:italic;letter-spacing:0}
+        .progress{position:fixed;left:var(--gutter);right:var(--gutter);bottom:18px;height:1px;z-index:1500;background:rgba(255,255,255,.25);mix-blend-mode:difference;pointer-events:none}
+        .progress i{position:absolute;inset:0;background:#fff;transform-origin:0 50%;transform:scaleX(var(--sp,0))}
+
+        .cursor{position:fixed;top:0;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;mix-blend-mode:difference;pointer-events:none;z-index:2100;transition:width .35s var(--ease),height .35s var(--ease),margin .35s var(--ease),opacity .3s;opacity:0}
+        .cursor.on{opacity:1}
+        .cursor.big{width:84px;height:84px;margin:-42px 0 0 -42px}
+        @media (hover:none){.cursor{display:none}}
+
+        /* ===== Hero: the arch opens into the clouds ===== */
+        .hero{height:330vh;position:relative}
+        .hero .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;--x0:35vw;--y0:16vh;--y1:11vh}
+        .hero .window{position:absolute;inset:0;z-index:2;
+            clip-path:inset(calc(var(--y0)*(1 - var(--e,0))) calc(var(--x0)*(1 - var(--e,0))) calc(var(--y1)*(1 - var(--e,0))) calc(var(--x0)*(1 - var(--e,0))) round calc(50vw*(1 - var(--e,0))) calc(50vw*(1 - var(--e,0))) calc(14px*(1 - var(--e,0))) calc(14px*(1 - var(--e,0))))}
+        .hero .window img{width:100%;height:100%;object-fit:cover;object-position:50% 40%;transform:scale(calc(1.3 - .3*var(--e,0)))}
+        .hero .window::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),transparent 30%,transparent 55%,rgba(0,0,0,.45));opacity:var(--e,0)}
+        .mist{position:absolute;inset:-20%;z-index:3;pointer-events:none;opacity:calc(.85 - .85*var(--e,0));
+            background:radial-gradient(40% 30% at 30% 60%,rgba(255,255,255,.9),transparent 70%),radial-gradient(35% 25% at 72% 40%,rgba(255,255,255,.75),transparent 70%),radial-gradient(50% 30% at 50% 85%,rgba(255,255,255,.8),transparent 70%);
+            filter:blur(30px);animation:drift 14s ease-in-out infinite alternate}
+        @keyframes drift{from{transform:translate3d(-4%,0,0)}to{transform:translate3d(4%,-3%,0)}}
+        .hero .name{position:absolute;z-index:1;font-size:clamp(96px,21vw,380px);color:var(--ink);white-space:nowrap}
+        .hero .name.first{left:var(--gutter);top:9vh;transform:translate3d(calc(-30vw*var(--e,0)),0,0)}
+        .hero .name.last{right:var(--gutter);bottom:5vh;font-style:italic;z-index:5;opacity:calc(1 - var(--e,0)*1.6);transform:translate3d(calc(30vw*var(--e,0)),0,0)}
+        .hero .name .ch{display:inline-block;opacity:0;transform:translate3d(0,40%,0) rotate(6deg);animation:rise 1.4s var(--ease) forwards;animation-delay:calc(.25s + var(--i)*.07s)}
+        @keyframes rise{to{opacity:1;transform:none}}
+        .settled .hero .name .ch{animation:none;opacity:1;transform:none}
+        .hero .aside{position:absolute;z-index:4;left:var(--gutter);bottom:5vh;max-width:240px;color:var(--muted);opacity:calc(1 - var(--e,0)*3)}
+        .hero .aside p{font-size:14px;line-height:1.5;margin-top:10px}
+        .hero .hint{position:absolute;z-index:4;right:var(--gutter);top:50%;writing-mode:vertical-rl;color:var(--muted);opacity:calc(1 - var(--e,0)*3);display:flex;align-items:center;gap:14px}
+        .hero .hint::after{content:'';width:1px;height:60px;background:currentColor;animation:hint 2.2s var(--ease) infinite;transform-origin:top}
+        @keyframes hint{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+        .hero .over{position:absolute;z-index:4;left:0;right:0;bottom:12vh;text-align:center;color:#fff;opacity:calc((var(--e,0) - .82)*6);transform:translate3d(0,calc(30px*(1 - var(--e,0))),0)}
+        .hero .over .serif{font-size:clamp(46px,8vw,128px)}
+        .hero .over .label{display:block;margin-bottom:18px;opacity:.85}
+
+        /* ===== Manifesto: words light up ===== */
+        .manifesto{height:240vh;position:relative}
+        .manifesto .stage{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;padding:0 var(--gutter)}
+        .manifesto .label{color:var(--muted);margin-bottom:34px}
+        .manifesto p{font-family:var(--serif);font-size:clamp(34px,5.6vw,92px);line-height:1.04;max-width:16ch;letter-spacing:-.01em}
+        .manifesto p .w{opacity:.13;transition:opacity .25s linear}
+        .manifesto p .w.i{font-style:italic}
+
+        /* ===== Marquee ===== */
+        .marquee{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0}
+        .marquee .row{display:flex;width:max-content;animation:marquee 38s linear infinite}
+        .marquee span{font-family:var(--serif);font-size:clamp(34px,5vw,72px);line-height:1;padding-right:.6em;white-space:nowrap}
+        .marquee span:nth-child(even){font-style:italic;color:var(--muted)}
+        @keyframes marquee{to{transform:translate3d(-50%,0,0)}}
+
+        /* ===== Chapter heads ===== */
+        .chap{display:flex;align-items:baseline;gap:18px;color:var(--muted)}
+        .chap::after{content:'';flex:1;height:1px;background:var(--line);transform:translateY(-4px)}
+        figure figcaption{display:flex;justify-content:space-between;gap:16px;margin-top:14px;color:var(--muted)}
+        figure figcaption .serif{font-size:20px;color:var(--fg);line-height:1.2}
+
+        /* ===== North: horizontal drift ===== */
+        .north{position:relative}
+        .north .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center}
+        .north .ghost{position:absolute;left:0;top:50%;font-size:clamp(220px,46vw,780px);white-space:nowrap;color:transparent;-webkit-text-stroke:1px var(--line);transform:translate3d(var(--gx,0),-52%,0);pointer-events:none;font-style:italic}
+        .north .track{display:flex;align-items:center;gap:clamp(36px,7vw,120px);padding:0 var(--gutter);will-change:transform;position:relative}
+        .north .intro{flex:0 0 auto;width:min(420px,78vw)}
+        .north .intro .serif{font-size:clamp(84px,12vw,180px);margin:18px 0 22px}
+        .north .intro p{font-size:16px;max-width:30ch;color:var(--muted)}
+        .north figure{flex:0 0 auto}
+        .north figure .frame{height:66vh;height:66svh;aspect-ratio:3/4;overflow:hidden;border-radius:4px}
+        .north figure:nth-of-type(1){transform:translateY(-7vh)}
+        .north figure:nth-of-type(1) .frame{height:52vh;height:52svh}
+        .north figure:nth-of-type(2){transform:translateY(5vh)}
+        .north figure:nth-of-type(3) .frame{height:74vh;height:74svh}
+        .north .outro{flex:0 0 auto;width:min(360px,74vw);font-family:var(--serif);font-size:clamp(30px,3.4vw,48px);line-height:1.1}
+
+        .frame img{width:100%;height:100%;object-fit:cover}
+        .reveal .frame img{transform:scale(1.18);transition:transform 1.8s var(--ease)}
+        .reveal.in .frame img{transform:scale(1)}
+        .reveal .frame{clip-path:inset(12% 0 0 0);transition:clip-path 1.4s var(--ease)}
+        .reveal.in .frame{clip-path:inset(0 0 0 0)}
+        .fade{opacity:0;transform:translate3d(0,28px,0);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+        .fade.in{opacity:1;transform:none}
+
+        /* ===== Blue ===== */
+        .blue{padding:22vh var(--gutter) 18vh}
+        .blue .head{display:grid;grid-template-columns:1fr 1fr;gap:var(--gutter);align-items:end;margin:40px 0 12vh}
+        .blue .head h2{font-size:clamp(84px,15vw,250px)}
+        .blue .head p{font-size:17px;max-width:34ch;color:var(--muted);justify-self:end}
+        .blue .pair{display:grid;grid-template-columns:5fr 6fr;gap:clamp(20px,6vw,110px);align-items:start}
+        .blue .pair figure:nth-child(2){margin-top:22vh}
+        .blue .frame{aspect-ratio:3/4;overflow:hidden;border-radius:4px}
+        .blue .pair figure:nth-child(1) .frame{border-radius:999px 999px 4px 4px}
+        .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,24px);margin-top:16vh}
+        .swatch .chip{aspect-ratio:1;border-radius:50%;background:var(--c);transform:scale(.6);transition:transform 1.2s var(--ease);transition-delay:calc(var(--i)*.12s)}
+        .swatches.in .chip{transform:scale(1)}
+        .swatch .serif{font-size:clamp(20px,2.4vw,34px);margin-top:16px;line-height:1.1}
+        .swatch .label{color:var(--muted);margin-top:6px;display:block}
+        .blue .closing{font-family:var(--serif);font-size:clamp(38px,6vw,96px);line-height:1.02;max-width:18ch;margin:20vh auto 0;text-align:center}
+
+        /* ===== Wishes: a circle opens ===== */
+        .wishes{height:300vh;position:relative}
+        .wishes .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;place-items:center}
+        .wishes .behind{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 var(--gutter)}
+        .wishes .behind .serif{font-size:clamp(60px,11vw,190px)}
+        .wishes .behind .label{margin-bottom:24px;opacity:.7}
+        .wishes .disc{position:absolute;inset:0;clip-path:circle(calc(9vmax + 70vmax*var(--e,0)) at 50% 50%)}
+        .wishes .disc img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;transform:scale(calc(1.35 - .35*var(--e,0))) rotate(calc(-6deg + 6deg*var(--e,0)))}
+        .wishes .disc::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(40,0,0,.55));opacity:var(--e,0)}
+        .wishes .front{position:absolute;left:0;right:0;bottom:11vh;text-align:center;color:#fff;padding:0 var(--gutter);opacity:calc((var(--e,0) - .8)*5)}
+        .wishes .front .serif{font-size:clamp(44px,7vw,112px)}
+
+        /* ===== Night ===== */
+        .night{padding:24vh var(--gutter) 0}
+        .night .lede{font-family:var(--serif);font-size:clamp(40px,6.4vw,104px);line-height:1.02;max-width:15ch}
+        .night .lede em{color:#9fb0ff}
+        .night .frame{margin:14vh 0 0;height:115vh;overflow:hidden;border-radius:4px;position:relative}
+        .night .frame img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;transform:scale(var(--ns,1.2))}
+        .night figcaption{margin-top:14px}
+        .stars{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.4s var(--ease)}
+        body.dark .stars{opacity:1}
+        .stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:tw var(--d) ease-in-out infinite alternate}
+        @keyframes tw{from{opacity:.05}to{opacity:.8}}
+        main,footer{position:relative;z-index:1}
+
+        /* ===== Footer ===== */
+        footer{padding:26vh var(--gutter) 70px;text-align:center}
+        footer .bye{font-size:clamp(90px,19vw,340px);font-style:italic}
+        footer .bye .ch{display:inline-block;transform:translate3d(0,60%,0);opacity:0;transition:transform 1.2s var(--ease),opacity 1.2s var(--ease);transition-delay:calc(var(--i)*.06s)}
+        footer.in .bye .ch{transform:none;opacity:1}
+        footer p{color:var(--muted);margin-top:28px}
+        footer .meta{display:flex;justify-content:space-between;gap:20px;margin-top:20vh;padding-top:22px;border-top:1px solid var(--line);color:var(--muted)}
+        footer .meta a{text-decoration:none}
+        footer .meta a:hover{color:var(--fg)}
+
+        /* ===== Small screens ===== */
+        @media (max-width:760px){
+            .hero .stage{--x0:14vw;--y0:24vh;--y1:20vh}
+            .hero .name.first{top:11vh}
+            .hero .name.last{bottom:9vh}
+            .hero .aside,.hero .hint{display:none}
+            .north figure .frame{height:56svh}
+            .north figure:nth-of-type(1) .frame{height:46svh}
+            .north figure:nth-of-type(3) .frame{height:60svh}
+            .blue .head{grid-template-columns:1fr}
+            .blue .head p{justify-self:start}
+            .blue .pair{grid-template-columns:1fr}
+            .blue .pair figure:nth-child(2){margin-top:0;width:86%;margin-left:auto}
+            .swatches{grid-template-columns:repeat(2,1fr);row-gap:40px}
+            .night .frame{height:auto;aspect-ratio:3/4}
+            footer .meta{flex-direction:column;align-items:center}
+        }
+        @media (prefers-reduced-motion:reduce){
+            .grain,.mist,.marquee .row{animation:none}
+            .hero .name .ch{animation-duration:.01s;animation-delay:0s}
+        }
+    </style>
+</head>
+<body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="cursor" aria-hidden="true"></div>
+    <div class="stars" aria-hidden="true"></div>
+
+    <header class="chrome">
+        <a href="#top" class="sig">Eli Mlekuž</a>
+        <span class="label">A scrapbook of elsewhere</span>
+    </header>
+    <div class="progress" aria-hidden="true"><i></i></div>
+
+    <main id="top">
+        <!-- Hero -->
+        <section class="hero" data-scrub="hero" data-bg="#f3eee6" data-fg="#1d1b19">
+            <div class="stage">
+                <h1 class="name first serif" data-split>Eli</h1>
+                <div class="name last serif" data-split aria-hidden="true">Mlekuž</div>
+                <div class="window"><img src="photos/mist.webp" alt="Eli at a railing, looking at a mist-wrapped stone pillar with a pavilion on top"></div>
+                <div class="mist" aria-hidden="true"></div>
+                <div class="aside">
+                    <span class="label">N° 00 — Index</span>
+                    <p>Fog, fjords, faraway blues and city lights. A small archive of looking.</p>
+                </div>
+                <div class="hint label">Scroll</div>
+                <div class="over">
+                    <span class="label">N° 01 — China</span>
+                    <div class="serif"><em>above</em> the clouds</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manifesto -->
+        <section class="manifesto" data-scrub="manifesto" data-bg="#f3eee6" data-fg="#1d1b19">
+            <div class="stage">
+                <span class="label">Hello —</span>
+                <p data-words>I collect *horizons* — misty peaks, northern cliffs, water so blue it looks *invented*, and every window I can find at night.</p>
+            </div>
+        </section>
+
+        <div class="marquee" aria-hidden="true">
+            <div class="row">
+                <span>China</span><span>✦ Norway</span><span>✦ Italy</span><span>✦ the Mediterranean</span><span>✦ clouds</span><span>✦ fjords</span>
+                <span>China</span><span>✦ Norway</span><span>✦ Italy</span><span>✦ the Mediterranean</span><span>✦ clouds</span><span>✦ fjords</span>
+            </div>
+        </div>
+
+        <!-- Chapter I: North -->
+        <section class="north" data-scrub="north" data-bg="#e3e6e4" data-fg="#1b2124">
+            <div class="stage">
+                <div class="ghost serif" aria-hidden="true">nord</div>
+                <div class="track">
+                    <div class="intro">
+                        <span class="label chap">Chapter I</span>
+                        <h2 class="serif">North</h2>
+                        <p>Grey skies, cold wind, a beanie pulled low and a two-thousand-foot drop just past the toes.</p>
+                    </div>
+                    <figure class="reveal" data-hover>
+                        <div class="frame"><img src="photos/beanie.webp" alt="Eli winking and laughing in a navy pom-pom beanie by a mountain lake" loading="lazy"></div>
+                        <figcaption><span class="serif it">Wind-blown</span><span class="label">N° 02</span></figcaption>
+                    </figure>
+                    <figure class="reveal" data-hover>
+                        <div class="frame"><img src="photos/kjerag.webp" alt="Eli in a pink jersey on a cliff edge above a fjord, a waterfall falling down the rock face" loading="lazy"></div>
+                        <figcaption><span class="serif it">Kjerag</span><span class="label">N° 03</span></figcaption>
+                    </figure>
+                    <figure class="reveal" data-hover>
+                        <div class="frame"><img src="photos/kjeragbolten.webp" alt="Two people standing on the boulder wedged between cliffs at Kjeragbolten" loading="lazy"></div>
+                        <figcaption><span class="serif it">Kjeragbolten, together</span><span class="label">N° 04</span></figcaption>
+                    </figure>
+                    <p class="outro">Some places only make sense <em>from the edge.</em></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter II: Blue -->
+        <section class="blue" data-bg="#d5def4" data-fg="#18233f">
+            <span class="label chap fade">Chapter II</span>
+            <div class="head">
+                <h2 class="serif fade">Blue<em>s</em></h2>
+                <p class="fade">Plumbago walls, printed dresses, and an alpine lake that couldn't decide between green and turquoise. Every summer turns out to be the same colour.</p>
+            </div>
+            <div class="pair">
+                <figure class="reveal" data-speed=".06" data-hover>
+                    <div class="shift"><div class="frame"><img src="photos/plumbago.webp" alt="Eli in a blue and white halter dress in front of a wall of pale blue plumbago flowers" loading="lazy"></div></div>
+                    <figcaption><span class="serif it">Plumbago season</span><span class="label">N° 05</span></figcaption>
+                </figure>
+                <figure class="reveal" data-speed="-.08" data-hover>
+                    <div class="shift"><div class="frame"><img src="photos/lake.webp" alt="A turquoise alpine lake under a grey limestone mountain, a paddleboarder far out on the water" loading="lazy"></div></div>
+                    <figcaption><span class="serif it">Lago del Predil</span><span class="label">N° 06</span></figcaption>
+                </figure>
+            </div>
+            <div class="swatches fade">
+                <div class="swatch" style="--c:#a9b9e3;--i:0"><div class="chip"></div><div class="serif">Plumbago</div><span class="label">#A9B9E3</span></div>
+                <div class="swatch" style="--c:#2f4f9c;--i:1"><div class="chip"></div><div class="serif">Printed cotton</div><span class="label">#2F4F9C</span></div>
+                <div class="swatch" style="--c:#3fb2ac;--i:2"><div class="chip"></div><div class="serif">Predil</div><span class="label">#3FB2AC</span></div>
+                <div class="swatch" style="--c:#7ea6d8;--i:3"><div class="chip"></div><div class="serif">Late sky</div><span class="label">#7EA6D8</span></div>
+            </div>
+            <p class="closing fade">Blue is just distance, <em>made visible.</em></p>
+        </section>
+
+        <!-- Chapter III: Wishes -->
+        <section class="wishes" data-scrub="wishes" data-bg="#8f1d18" data-fg="#fbeee6">
+            <div class="stage">
+                <div class="behind">
+                    <span class="label">Chapter III</span>
+                    <div class="serif">a thousand <em>wishes</em></div>
+                </div>
+                <div class="disc"><img src="photos/wishes.webp" alt="Eli standing beneath hundreds of hanging wooden wish plaques with red tassels" loading="lazy"></div>
+                <div class="front">
+                    <div class="serif"><em>one</em> of them is mine</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter IV: Night -->
+        <section class="night" data-bg="#0a0e1c" data-fg="#e9ecf7" data-dark>
+            <span class="label chap fade">Chapter IV</span>
+            <p class="lede fade" style="margin-top:40px">And at the end of every long day — a window, a <em>river of lights</em>, a warm bath.</p>
+            <figure class="nightfig" data-hover>
+                <div class="frame"><img src="photos/night.webp" alt="Eli in a bathtub at a tall window, looking out over a river and a city of lit high-rises at night" loading="lazy"></div>
+                <figcaption><span class="serif it">Goodnight, city</span><span class="label">N° 08</span></figcaption>
+            </figure>
+        </section>
+    </main>
+
+    <footer data-bg="#0a0e1c" data-fg="#e9ecf7" data-dark>
+        <div class="bye serif" data-split>Eli Mlekuž</div>
+        <p>Still collecting.</p>
+        <div class="meta label">
+            <span>© 2026 Eli Mlekuž</span>
+            <a href="#top" data-top>Back to the clouds ↑</a>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    <script>
+    (() => {
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+        const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        // Split letters for staggered type
+        document.querySelectorAll('[data-split]').forEach(el => {
+            const text = el.textContent;
+            el.setAttribute('aria-label', text);
+            el.innerHTML = [...text].map((c, i) =>
+                c === ' ' ? ' ' : `<span class="ch" style="--i:${i}" aria-hidden="true">${c}</span>`).join('');
+        });
+
+        // Safety net in case the intro animation never gets to run
+        setTimeout(() => document.body.classList.add('settled'), 2600);
+
+        // Split manifesto into words; *word* = italic
+        const words = [];
+        document.querySelectorAll('[data-words]').forEach(el => {
+            el.innerHTML = el.textContent.trim().split(/\s+/).map(w => {
+                const it = /^\*.*\*[,.]?$/.test(w);
+                return `<span class="w${it ? ' i' : ''}">${w.replace(/\*/g, '')}</span>`;
+            }).join(' ');
+            words.push(...el.querySelectorAll('.w'));
+        });
+
+        // Stars for the night
+        const stars = document.querySelector('.stars');
+        for (let i = 0; i < 70; i++) {
+            const s = document.createElement('i');
+            s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;--d:${2 + Math.random() * 4}s;animation-delay:${-Math.random() * 6}s`;
+            stars.appendChild(s);
+        }
+
+        // Smooth scroll (falls back to native if the CDN is unavailable)
+        let lenis = null;
+        if (window.Lenis && !reduce) lenis = new Lenis({ lerp: .085, wheelMultiplier: .9 });
+
+        document.querySelectorAll('[data-top]').forEach(a => a.addEventListener('click', e => {
+            e.preventDefault();
+            lenis ? lenis.scrollTo(0, { duration: 2.6 }) : scrollTo({ top: 0, behavior: 'smooth' });
+        }));
+
+        // Reveal on enter
+        const io = new IntersectionObserver(entries => entries.forEach(en => {
+            if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        }), { rootMargin: '0px 0px -12% 0px' });
+        document.querySelectorAll('.reveal, .fade, .swatches, footer').forEach(el => io.observe(el));
+
+        // Background / ink follows whichever section is in the middle of the screen
+        const root = document.documentElement;
+        const themed = [...document.querySelectorAll('[data-bg]')];
+        let current = null;
+        function theme() {
+            const mid = innerHeight / 2;
+            const el = themed.find(s => { const r = s.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
+            if (!el || el === current) return;
+            current = el;
+            const d = el.dataset;
+            root.style.setProperty('--bg', d.bg);
+            root.style.setProperty('--fg', d.fg);
+            document.body.classList.toggle('dark', 'dark' in d);
+            document.querySelector('meta[name=theme-color]').content = d.bg;
+        }
+
+        // Scroll-scrubbed scenes
+        const hero = document.querySelector('[data-scrub=hero]');
+        const manifesto = document.querySelector('[data-scrub=manifesto]');
+        const wishes = document.querySelector('[data-scrub=wishes]');
+        const north = document.querySelector('[data-scrub=north]');
+        const track = north.querySelector('.track');
+        const ghost = north.querySelector('.ghost');
+        const nightImg = document.querySelector('.nightfig .frame img');
+        const nightFrame = document.querySelector('.nightfig .frame');
+        const parallax = [...document.querySelectorAll('[data-speed]')];
+        const bar = document.querySelector('.progress i');
+        let dist = 0;
+
+        function measure() {
+            dist = Math.max(0, track.scrollWidth - innerWidth);
+            north.style.height = (dist + innerHeight) + 'px';
+        }
+        // How far through a tall sticky section we are (0 → 1)
+        const progress = el => {
+            const r = el.getBoundingClientRect();
+            return clamp(-r.top / Math.max(1, r.height - innerHeight));
+        };
+
+        function update() {
+            const vh = innerHeight;
+            hero.style.setProperty('--e', ease(clamp(progress(hero) / .78)).toFixed(4));
+
+            const mp = progress(manifesto) * 1.25 * words.length;
+            words.forEach((w, i) => w.style.opacity = (.13 + .87 * clamp(mp - i)).toFixed(3));
+
+            const np = progress(north);
+            track.style.transform = `translate3d(${(-np * dist).toFixed(1)}px,0,0)`;
+            ghost.style.setProperty('--gx', `${(innerWidth * .2 - np * dist * .35).toFixed(1)}px`);
+
+            wishes.style.setProperty('--e', ease(clamp(progress(wishes) / .8)).toFixed(4));
+
+            const nr = nightFrame.getBoundingClientRect();
+            const nt = clamp((vh - nr.top) / (vh + nr.height));
+            nightImg.style.setProperty('--ns', (1.25 - .25 * nt).toFixed(4));
+
+            parallax.forEach(f => {
+                const r = f.getBoundingClientRect();
+                const off = r.top + r.height / 2 - vh / 2;
+                f.firstElementChild.style.transform = `translate3d(0,${(off * +f.dataset.speed).toFixed(1)}px,0)`;
+            });
+
+            theme();
+            const max = document.documentElement.scrollHeight - vh;
+            bar.style.setProperty('--sp', (scrollY / Math.max(1, max)).toFixed(4));
+        }
+
+        // Cursor
+        const cursor = document.querySelector('.cursor');
+        let mx = -100, my = -100, cx = -100, cy = -100;
+        addEventListener('pointermove', e => {
+            if (e.pointerType !== 'mouse') return;
+            mx = e.clientX; my = e.clientY; cursor.classList.add('on');
+        });
+        document.querySelectorAll('[data-hover], a').forEach(el => {
+            el.addEventListener('pointerenter', () => cursor.classList.add('big'));
+            el.addEventListener('pointerleave', () => cursor.classList.remove('big'));
+        });
+
+        function loop(t) {
+            if (lenis) lenis.raf(t);
+            update();
+            cx += (mx - cx) * .18; cy += (my - cy) * .18;
+            cursor.style.transform = `translate3d(${cx}px,${cy}px,0)`;
+            requestAnimationFrame(loop);
+        }
+
+        measure();
+        addEventListener('resize', measure);
+        addEventListener('load', measure);
+        requestAnimationFrame(loop);
+    })();
+    </script>
+</body>
+</html>
