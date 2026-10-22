@@ -59,9 +59,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @media (max-width:860px){.nav ul{display:none}.nav .btn{padding:9px 14px}}
 
 /* ---------- hero ---------- */
-.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;cursor:grab;touch-action:pan-y}
-.hero:active{cursor:grabbing}
-.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:#0b0c0e url(assets/video/hero.jpg) center/cover}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:heroIn 2.4s cubic-bezier(.2,.7,.2,1) both}
+@keyframes heroIn{from{transform:scale(1.08);filter:brightness(.6)}to{transform:none;filter:none}}
 .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,rgba(14,15,17,.5) 0%,rgba(14,15,17,0) 22%,rgba(14,15,17,0) 45%,rgba(14,15,17,.92) 100%)}
 .hero-copy{position:absolute;z-index:2;left:var(--gut);right:var(--gut);bottom:clamp(28px,7vh,80px);pointer-events:none;
@@ -73,11 +73,15 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .hero-side p{color:#d6d4cd;font-size:17px;line-height:1.5;margin-bottom:22px}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .drag-hint{position:absolute;z-index:2;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;
-  padding:10px 16px;border-radius:999px;background:rgba(14,15,17,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:10px 16px;border-radius:999px;background:rgba(14,15,17,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,.14);pointer-events:none;transition:opacity .6s;color:#ddd}
 .drag-hint.gone{opacity:0}
 .drag-hint svg{width:22px;height:22px;animation:sway 2.4s ease-in-out infinite}
 @keyframes sway{0%,100%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.hero h1 span{animation:rise 1.2s cubic-bezier(.2,.7,.2,1) both}
+.hero h1 span+span{animation-delay:.15s}
+.hero-side{animation:rise 1.2s .3s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
 .hud{position:absolute;z-index:2;top:84px;right:var(--gut);text-align:right;pointer-events:none;line-height:1.9;color:#d8d6cf;
   padding:10px 14px;border-radius:10px;background:rgba(14,15,17,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
 .hud b{color:var(--amber);font-weight:500}
@@ -121,7 +125,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ed-bar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
 .ed-bar i{width:11px;height:11px;border-radius:50%;background:#3a3b40}
 .ed-bar .mono{margin-left:auto;font-size:11px;letter-spacing:.08em}
-.ed-view{position:relative;aspect-ratio:16/9;background:#000}
+.ed-view{position:relative;aspect-ratio:16/9;background:#000;cursor:grab;touch-action:pan-y}
+.ed-view:active{cursor:grabbing}
 .ed-view canvas{position:absolute;inset:0;width:100%;height:100%}
 .ed-tag{position:absolute;left:14px;top:14px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.55);font-family:var(--mono);font-size:11px;color:#ddd;letter-spacing:.06em}
 .ed-safe{position:absolute;inset:9%;border:1px dashed rgba(255,255,255,.22);border-radius:6px;pointer-events:none;transition:opacity .4s}
@@ -275,7 +280,7 @@ footer .brand img{width:24px;height:24px}
 .rv.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){
   .rv{opacity:1;transform:none;transition:none}
-  .ticker-track,.drag-hint svg{animation:none}
+  .ticker-track,.drag-hint svg,.hero video,.hero h1 span,.hero-side{animation:none}
 }
 </style>
 </head>
@@ -294,15 +299,11 @@ footer .brand img{width:24px;height:24px}
 </nav>
 
 <header class="hero" id="top">
-  <canvas id="heroGL" aria-label="Interactive 360° kayaking video. Drag to look around."></canvas>
+  <video id="heroVid" muted loop playsinline autoplay preload="auto" poster="assets/video/hero.jpg" aria-label="POV kayaking video on the Lower Rauma, Norway"></video>
   <div class="hud mono">
-    <div>Source <b>GoPro MAX · .360</b></div>
-    <div>Yaw <b id="hudYaw">000°</b> · Pitch <b id="hudPitch">00°</b></div>
-    <div>Quality <b id="hudQ">4K 360°</b></div>
-  </div>
-  <div class="drag-hint mono" id="dragHint">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
-    Drag to look around
+    <div>Clip <b>GS010435</b></div>
+    <div>River <b>Lower Rauma</b></div>
+    <div>Quality <b id="hudQ">4K</b></div>
   </div>
   <div class="hero-copy">
     <h1><span>Shoot it all.</span><span class="o">Cut it later.</span></h1>
@@ -358,7 +359,11 @@ footer .brand img{width:24px;height:24px}
       <div class="editor">
         <div class="ed-bar"><i></i><i></i><i></i><span class="mono">GS010555.360 — Cutroom</span></div>
         <div class="ed-view">
-          <canvas id="edGL"></canvas>
+          <canvas id="edGL" aria-label="Interactive 360° clip. Drag to look around."></canvas>
+          <div class="drag-hint mono" id="dragHint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
+            Drag to look around
+          </div>
           <div class="ed-safe" id="edSafe"></div>
           <div class="ed-tag" id="edTag">VIEW · Rectilinear</div>
         </div>
@@ -487,7 +492,6 @@ footer .brand img{width:24px;height:24px}
 <section class="showcase" id="made">
   <div class="show-stick">
     <video data-src="assets/video/export_0564_4k.mp4" data-sm="assets/video/export_0564.mp4" poster="assets/video/export_0564_4k.jpg" data-title="The gorge" data-in="GS010564.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/norway.mp4" poster="assets/video/norway.jpg" data-title="Ulvaa · Lower Rauma" data-in="GS010435" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
     <video data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" data-title="The waterfall" data-in="GS010038" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
     <video data-src="assets/video/alps_final.mp4" poster="assets/video/alps_final.jpg" data-title="King of the Alps · final run" data-in="FINALRUN" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
     <video data-src="assets/video/export_0555_hq.mp4" poster="assets/video/export_0555_hq.jpg" data-title="The drop" data-in="GS010555.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
@@ -567,7 +571,6 @@ const probe = document.createElement('canvas').getContext('webgl');
 const big = innerWidth >= 900 && !(navigator.connection && navigator.connection.saveData)
   && probe && probe.getParameter(probe.MAX_TEXTURE_SIZE) >= 4096;
 const clip = name => `assets/360/${name}${big ? '_4k' : ''}.mp4`;
-$('hudQ').textContent = big ? '4K 360°' : '2K 360°';
 
 function Sphere(canvas, src, poster) {
   const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false });
@@ -626,37 +629,28 @@ function Sphere(canvas, src, poster) {
   return api;
 }
 
-/* ---------- hero: drag to look ---------- */
-const hero = document.querySelector('.hero');
-const H = Sphere($('heroGL'), clip('gorge'), 'assets/360/gorge.jpg');
-H.view.scale = innerWidth < 700 ? 1.05 : .78;
-let drag = null, vy = 0, vp = 0, idle = 0;
-hero.addEventListener('pointerdown', e => {
-  if (e.target.closest('a')) return;
-  drag = { x: e.clientX, y: e.clientY }; $('dragHint').classList.add('gone'); hero.setPointerCapture(e.pointerId);
-});
-hero.addEventListener('pointermove', e => {
-  if (!drag) return;
-  const k = 2.2 * H.view.scale / hero.clientHeight;
-  vy = -(e.clientX - drag.x) * k; vp = (e.clientY - drag.y) * k;
-  drag = { x: e.clientX, y: e.clientY };
-  H.view.yaw += vy; H.view.pitch = clamp(H.view.pitch + vp, -1.3, 1.3);
-});
-const endDrag = () => { drag = null; idle = 0; };
-hero.addEventListener('pointerup', endDrag); hero.addEventListener('pointercancel', endDrag);
-H.onFrame = () => {
-  if (!drag) {
-    vy *= .94; vp *= .94; idle++;
-    H.view.yaw += vy + (reduced ? 0 : Math.min(idle / 240, 1) * .0009);
-    H.view.pitch = clamp(H.view.pitch + vp, -1.3, 1.3);
-    if (idle > 120) H.view.pitch *= .99;
-  }
-  $('hudYaw').textContent = String(((deg(H.view.yaw) % 360) + 360) % 360).padStart(3, '0') + '°';
-  $('hudPitch').textContent = (H.view.pitch < 0 ? '−' : '') + String(Math.abs(deg(H.view.pitch))).padStart(2, '0') + '°';
-};
+/* ---------- hero: sharpest flat clip the screen can use ---------- */
+const heroVid = $('heroVid'), px = Math.max(screen.width, innerWidth) * (devicePixelRatio || 1);
+const slow = navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''));
+const heroRes = slow ? '1080' : px >= 2400 ? '4k' : px >= 1300 ? '1440' : '1080';
+heroVid.src = `assets/video/hero_${heroRes}.mp4`;
+$('hudQ').textContent = { '4k': '4K', '1440': '1440p', '1080': '1080p' }[heroRes];
+if (reduced) heroVid.removeAttribute('autoplay'); else heroVid.play().catch(() => {});
+inView(heroVid, on => on && !reduced ? heroVid.play().catch(() => {}) : heroVid.pause());
 
 /* ---------- 01 editor: scroll-driven camera ---------- */
 const E = Sphere($('edGL'), clip('drop'), 'assets/360/drop.jpg');
+const edView = $('edGL').parentElement;
+let edDrag = null, offYaw = 0, offPitch = 0;
+edView.addEventListener('pointerdown', e => { edDrag = { x: e.clientX, y: e.clientY }; $('dragHint').classList.add('gone'); edView.setPointerCapture(e.pointerId); });
+edView.addEventListener('pointermove', e => {
+  if (!edDrag) return;
+  const k = 2.2 * E.view.scale / edView.clientHeight;
+  offYaw -= (e.clientX - edDrag.x) * k; offPitch = clamp(offPitch + (e.clientY - edDrag.y) * k, -1.2, 1.2);
+  edDrag = { x: e.clientX, y: e.clientY };
+});
+const edEnd = () => edDrag = null;
+edView.addEventListener('pointerup', edEnd); edView.addEventListener('pointercancel', edEnd);
 const reframe = $('edit');
 const steps = [...document.querySelectorAll('.step')], dots = [...document.querySelectorAll('.progress-dots i')];
 // keyframes along scroll progress: [t, yaw°, pitch°, scale, dist]
@@ -679,7 +673,7 @@ function sampleKF(t) {
 }
 E.onFrame = video => {
   const [y, p, s, d] = sampleKF(scrollT), v = E.view;
-  v.yaw = lerp(v.yaw, y * Math.PI / 180, .18); v.pitch = lerp(v.pitch, p * Math.PI / 180, .18);
+  v.yaw = lerp(v.yaw, y * Math.PI / 180 + offYaw, .18); v.pitch = lerp(v.pitch, clamp(p * Math.PI / 180 + offPitch, -1.57, 1.57), .18);
   v.scale = lerp(v.scale, s, .18); v.dist = lerp(v.dist, d, .18);
   $('pYaw').textContent = ((deg(v.yaw) % 360) + 360) % 360 + '°';
   $('pPitch').textContent = deg(v.pitch) + '°';
