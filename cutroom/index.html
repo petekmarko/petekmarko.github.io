@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <meta property="og:title" content="Cutroom — the 360° video editor">
 <meta property="og:description" content="Shoot it all. Cut it later.">
-<meta property="og:image" content="assets/img/soca-drop.webp">
+<meta property="og:image" content="assets/img/soca-boof.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -335,7 +335,7 @@ footer .brand img{width:24px;height:24px}
 <!-- 01 · easy 360 editing -->
 <section class="reframe" id="edit">
   <div class="reframe-stick">
-    <div class="bg"><img src="assets/img/soca-drop.webp" alt="" loading="lazy"></div>
+    <div class="bg"><img src="assets/img/riverbank.webp" alt="" loading="lazy"></div>
     <div class="reframe-grid">
       <div class="steps">
         <div class="step on">
@@ -398,7 +398,7 @@ footer .brand img{width:24px;height:24px}
         <div class="w-body">
           <div class="preset-props">
             <div>Output<b>16:9 · 4K</b></div>
-            <div>Field of view<b>141°</b></div>
+            <div>Field of view<b>142°</b></div>
             <div>Horizon<b>Locked</b></div>
             <div>LUT<b>Glacier</b></div>
           </div>
@@ -412,7 +412,7 @@ footer .brand img{width:24px;height:24px}
 
   <!-- 03 · batch render -->
   <section class="panel" id="render">
-    <div class="bg"><img src="assets/img/pink-falls.webp" alt="" loading="lazy" style="object-position:center 78%"></div>
+    <div class="bg"><video class="bgvid" data-src="assets/video/canyon_bg.mp4" poster="assets/video/canyon_bg.jpg" muted loop playsinline preload="none"></video></div>
     <div class="inner wrap">
       <div>
         <span class="kicker">03 — Batch render</span>
@@ -491,10 +491,10 @@ footer .brand img{width:24px;height:24px}
 <!-- made with cutroom -->
 <section class="showcase" id="made">
   <div class="show-stick">
-    <video data-src="assets/video/export_0564_4k.mp4" data-sm="assets/video/export_0564.mp4" poster="assets/video/export_0564_4k.jpg" data-title="The gorge" data-in="GS010564.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/export_0564_4k.mp4" data-sm="assets/video/export_0564.mp4" poster="assets/video/export_0564_4k.jpg" data-title="The gorge" data-in="GS010564.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
     <video data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" data-title="The waterfall" data-in="GS010038" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/alps_final.mp4" poster="assets/video/alps_final.jpg" data-title="King of the Alps · final run" data-in="FINALRUN" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/export_0555_hq.mp4" poster="assets/video/export_0555_hq.jpg" data-title="The drop" data-in="GS010555.360" data-out="16:9 · 4K · 141° FOV" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/alps.mp4" poster="assets/video/alps.jpg" data-title="King of the Alps" data-in="GS010348.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
+    <video data-src="assets/video/export_0555_hq.mp4" poster="assets/video/export_0555_hq.jpg" data-title="The drop" data-in="GS010555.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
     <div class="show-count" id="showCount"></div>
     <div class="show-copy wrap">
       <div>
@@ -504,14 +504,14 @@ footer .brand img{width:24px;height:24px}
       </div>
       <div class="show-meta">
         <span class="chip">IN <b id="showIn">GS010564.360</b></span>
-        <span class="chip">OUT <b id="showOut">16:9 · 4K · 141° FOV</b></span>
+        <span class="chip">OUT <b id="showOut">16:9 · 4K · 142° FOV</b></span>
       </div>
     </div>
   </div>
 </section>
 
 <section class="flow" id="workflow">
-  <div class="bg"><img src="assets/img/fisheye.webp" alt="" loading="lazy"></div>
+  <div class="bg"><video class="bgvid" data-src="assets/video/alps_bg.mp4" poster="assets/video/alps_bg.jpg" muted loop playsinline preload="none"></video></div>
   <div class="wrap">
     <span class="kicker">Workflow</span>
     <h2 class="big rv">Card to cut in three moves.</h2>
@@ -733,7 +733,7 @@ function onPanels() {
 }
 
 /* ---------- 02 presets: apply to every clip ---------- */
-const thumbs = ['soca-drop', 'gorge-cave', 'norway-tier', 'fisheye', 'pink-falls', 'soca-boof', 'celebrate', 'waterfall', 'soca-boof', 'norway-tier', 'soca-drop', 'celebrate'];
+const thumbs = ['riverbank', 'gorge-cave', 'norway-tier', 'soca-boof', 'celebrate', 'waterfall', 'soca-boof', 'riverbank', 'norway-tier', 'celebrate', 'gorge-cave', 'waterfall'];
 const clipsEl = $('clips');
 thumbs.forEach(t => { const c = document.createElement('div'); c.className = 'clip'; c.style.backgroundImage = `url(assets/img/${t}.webp)`; clipsEl.appendChild(c); });
 const clipEls = [...clipsEl.children], applyBtn = $('applyBtn');
@@ -752,7 +752,7 @@ let autoApplied = false;
 inView($('presetW'), on => { if (on && !autoApplied) { autoApplied = true; setTimeout(() => !applied && applyPreset(), 700); } });
 
 /* ---------- 03 batch render: parallel progress ---------- */
-const jobsData = [['GS010555.360', 'soca-drop', 1.0], ['GS010556.360', 'norway-tier', .78], ['GS010559.360', 'pink-falls', 1.25], ['GS010561.360', 'gorge-cave', .9], ['GS010564.360', 'soca-boof', 1.1]];
+const jobsData = [['GS010435.360', 'riverbank', 1.0], ['GS010441.360', 'norway-tier', .78], ['GS010583.360', 'gorge-cave', 1.25], ['GS010348.360', 'celebrate', .9], ['GS010564.360', 'soca-boof', 1.1]];
 const jobsEl = $('jobs');
 const jobs = jobsData.map(([n, t, sp]) => {
   const el = document.createElement('div'); el.className = 'job';
@@ -830,6 +830,12 @@ function onShow() {
   }
   bars.forEach((b, i) => b.style.width = clamp(t - i, 0, 1) * 100 + '%');
 }
+
+/* ---------- section background videos ---------- */
+document.querySelectorAll('.bgvid').forEach(v => {
+  inView(v, on => { if (on && !v.src) v.src = v.dataset.src; }, '600px');
+  inView(v, on => on && !reduced ? v.play().catch(() => {}) : v.pause());
+});
 
 /* ---------- nav, parallax, reveals ---------- */
 const nav = $('nav'), ctaBg = $('ctaBg'), cta = $('get');
