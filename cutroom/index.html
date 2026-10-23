@@ -27,6 +27,7 @@ body{background:var(--bg);overflow-x:clip}
 img,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+[hidden]{display:none !important}
 ::selection{background:var(--amber);color:#111}
 
 .mono{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
@@ -263,6 +264,53 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .flow-item p{color:#cfcdc6;line-height:1.55}
 @media (max-width:800px){.flow-grid{grid-template-columns:1fr}.flow-item .n{margin-bottom:24px}}
 
+/* ---------- drift wall ---------- */
+.wall-sec{position:relative;padding-top:clamp(90px,14vh,150px);overflow:hidden;background:var(--bg)}
+.wall-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:8px;position:relative;z-index:3}
+.wall-head p{max-width:40ch;color:var(--mute);line-height:1.55}
+.drift{position:relative;height:min(88vh,820px);perspective:1200px;overflow:hidden;touch-action:pan-y}
+.drift::before,.drift::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none}
+.drift::before{background:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,0) 22%,rgba(14,15,17,0) 78%,var(--bg) 100%)}
+.drift::after{background:linear-gradient(90deg,var(--bg) 0%,rgba(14,15,17,0) 14%,rgba(14,15,17,0) 86%,var(--bg) 100%)}
+.drift-plane{position:absolute;left:50%;top:50%;display:flex;gap:var(--dgap);transform-style:preserve-3d;will-change:transform}
+.dcol{display:flex;flex-direction:column;gap:var(--dgap);transform-style:preserve-3d;will-change:transform}
+.dtile{position:relative;flex:none;width:var(--dw);height:var(--dh);border-radius:14px;overflow:hidden;background:var(--panel);cursor:pointer;
+  opacity:.55;transform:translateZ(0);transition:transform .45s cubic-bezier(.2,.7,.2,1),opacity .35s,box-shadow .45s;border:0;padding:0;display:block}
+.dtile img,.dtile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dtile::after{content:"";position:absolute;inset:0;background:rgba(14,15,17,.35);transition:opacity .35s}
+.dtile:hover,.dtile:focus-visible{opacity:1;transform:translateZ(64px);box-shadow:0 30px 60px -20px rgba(0,0,0,.8);outline:none}
+.dtile:hover::after,.dtile:focus-visible::after{opacity:0}
+.dtile .lbl{position:absolute;z-index:1;left:10px;right:10px;bottom:9px;display:flex;justify-content:space-between;align-items:end;gap:8px;
+  font-weight:700;font-size:14px;letter-spacing:-.02em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7);text-align:left}
+.dtile .lbl i{font-style:normal;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.08em;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,.55);flex:none}
+.dtile .lbl i.r{background:var(--amber);color:#111}
+.wall-hint{position:absolute;z-index:3;left:50%;bottom:28px;transform:translateX(-50%);white-space:nowrap}
+
+/* example viewer overlay */
+.lb{position:fixed;inset:0;z-index:80;display:none;overflow-y:auto;align-items:center;justify-content:center;padding:clamp(12px,3vw,40px);
+  background:rgba(8,9,10,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lb.open{display:flex;animation:lbIn .35s ease both}
+@keyframes lbIn{from{opacity:0}to{opacity:1}}
+.lb-box{width:min(1180px,100%,calc((100svh - 230px) * 16 / 9));min-width:min(100%,520px);max-height:100%;display:flex;flex-direction:column;gap:14px;animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.lb-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.lb-top h3{font-weight:900;font-size:clamp(26px,3.4vw,44px);letter-spacing:-.045em;line-height:1}
+.lb-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);flex:none;transition:background .2s}
+.lb-btn:hover{background:rgba(255,255,255,.16)}
+.lb-stage{position:relative;aspect-ratio:16/9;flex:none;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--line2)}
+.lb-stage video,.lb-stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lb-stage canvas{cursor:grab;touch-action:none}
+.lb-stage canvas:active{cursor:grabbing}
+.lb-tag{position:absolute;z-index:2;left:14px;top:14px}
+.seg{position:absolute;z-index:2;right:14px;top:14px;display:flex;padding:4px;border-radius:999px;background:rgba(14,15,17,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14)}
+.seg button{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;color:#cfcdc6;transition:background .2s,color .2s}
+.seg button.on{background:var(--ink);color:#111}
+.lb-info{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.lb-steps{display:flex;gap:8px;flex-wrap:wrap}
+.lb-steps span{font-family:var(--mono);font-size:12px;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#d6d4cd}
+.lb-steps span b{color:var(--amber);font-weight:500;margin-right:6px}
+.lb-nav{display:flex;gap:8px}
+@media (max-width:700px){.seg button{padding:7px 10px;font-size:12px}.lb-tag{top:auto;bottom:12px;left:12px;font-size:11px}}
+
 /* ---------- cta ---------- */
 .cta{position:relative;min-height:110svh;display:flex;align-items:flex-end;overflow:hidden}
 .cta .bg{inset:-10% 0;--shade:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,.15) 30%,rgba(14,15,17,.3) 60%,rgba(14,15,17,.95) 100%)}
@@ -294,6 +342,7 @@ footer .brand img{width:24px;height:24px}
     <li><a href="#render">Batch render</a></li>
     <li><a href="#grade">Colour</a></li>
     <li><a href="#made">Made with Cutroom</a></li>
+    <li><a href="#examples">Examples</a></li>
   </ul>
   <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
 </nav>
@@ -523,6 +572,20 @@ footer .brand img{width:24px;height:24px}
   </div>
 </section>
 
+<section class="wall-sec" id="examples">
+  <div class="wall-head wrap">
+    <div>
+      <span class="kicker">Examples</span>
+      <h2 class="big rv">Pick a clip.<br>See the cut.</h2>
+    </div>
+    <p class="rv">Every tile is real footage from the river. Hover to preview, click to see what Cutroom made from it. Clips marked 360° let you flip back to the raw sphere and look around.</p>
+  </div>
+  <div class="drift" id="drift" aria-label="Wall of example clips">
+    <div class="drift-plane" id="driftPlane"></div>
+    <span class="wall-hint mono">Click any clip</span>
+  </div>
+</section>
+
 <section class="cta" id="get">
   <div class="bg" id="ctaBg"><img src="assets/img/waterfall.webp" alt="" loading="lazy"></div>
   <div class="cta-in wrap">
@@ -540,6 +603,32 @@ footer .brand img{width:24px;height:24px}
     <span class="mono">© 2026 Cutroom · 360° video, cut properly</span>
   </div>
 </footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+  <div class="lb-box">
+    <div class="lb-top">
+      <div><span class="kicker" id="lbFile" style="margin-bottom:8px">GS010564.360</span><h3 id="lbTitle">The gorge</h3></div>
+      <button class="lb-btn" id="lbClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l12 12M15 3 3 15"/></svg></button>
+    </div>
+    <div class="lb-stage">
+      <video id="lbVid" muted loop playsinline></video>
+      <canvas id="lbGL" hidden aria-label="Raw 360° clip. Drag to look around."></canvas>
+      <span class="chip lb-tag" id="lbTag">OUT <b>16:9 · 4K · 142° FOV</b></span>
+      <div class="seg" id="lbSeg"><button class="on" data-m="out">Cutroom export</button><button data-m="raw">Raw 360°</button></div>
+      <div class="drag-hint mono" id="lbHint" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
+        Drag to look around
+      </div>
+    </div>
+    <div class="lb-info">
+      <div class="lb-steps" id="lbSteps"></div>
+      <div class="lb-nav">
+        <button class="lb-btn" id="lbPrev" aria-label="Previous clip"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3 5 9l6 6"/></svg></button>
+        <button class="lb-btn" id="lbNext" aria-label="Next clip"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 3 6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -619,7 +708,13 @@ function Sphere(canvas, src, poster) {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     api.onFrame && api.onFrame(video);
   }
-  const api = { view, video };
+  const api = {
+    view, video,
+    setSrc(next, nextPoster) {
+      videoReady = false; video.src = next; img.src = nextPoster;
+      if (active) video.play().catch(() => {});
+    }
+  };
   // only visible players decode
   inView(canvas, on => {
     if (on === active) return;
@@ -830,6 +925,145 @@ function onShow() {
   }
   bars.forEach((b, i) => b.style.width = clamp(t - i, 0, 1) * 100 + '%');
 }
+
+/* ---------- examples: drift wall + viewer ---------- */
+const V = 'assets/video/', CLIPS = [
+  { id: '0564', title: 'The gorge', file: 'GS010564.360', out: '16:9 · 4K · 142° FOV', src: V + (big ? 'export_0564_4k.mp4' : 'export_0564.mp4'), raw: 'gorge',
+    steps: ['Imported .360', 'Reframed 142° FOV', 'Horizon locked', 'Graded + LUT', 'Rendered 4K'] },
+  { id: '0555', title: 'The drop', file: 'GS010555.360', out: '16:9 · 4K · 142° FOV', src: V + 'export_0555_hq.mp4', raw: 'drop',
+    steps: ['Imported .360', 'Reframed 142° FOV', 'Keyframed camera', 'Graded + LUT', 'Rendered 4K'] },
+  { id: '0348b', title: 'King of the Alps', file: 'GS010348.360', out: '16:9 · 4K · 142° FOV', src: V + 'alps.mp4',
+    steps: ['Imported .360', 'Reframed 142° FOV', 'Preset applied', 'Batch rendered'] },
+  { id: '0348a', title: 'Race start', file: 'GS010348.360', out: '16:9 · 4K · 142° FOV', src: V + 'alps_bg.mp4',
+    steps: ['Imported .360', 'Reframed 142° FOV', 'Preset applied', 'Batch rendered'] },
+  { id: '0435', title: 'Lower Rauma', file: 'GS010435', out: '16:9 · 4K · graded', src: V + (big ? 'hero_4k.mp4' : 'hero_1440.mp4'),
+    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
+  { id: '0583', title: 'The canyon', file: 'GS010583', out: '16:9 · 4K · graded', src: V + 'canyon_bg.mp4',
+    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
+  { id: '0038', title: 'The waterfall', file: 'GS010038', out: '16:9 · 4K · graded', src: V + 'waterfall_drop.mp4',
+    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
+  { id: '0441', title: 'Big water', file: 'GS010441', out: '16:9 · 4K · graded', src: V + 'big_water.mp4',
+    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
+];
+CLIPS.forEach(c => c.poster = `assets/tiles/${c.id}-a.webp`);
+
+const drift = $('drift'), plane = $('driftPlane');
+let cols = [], wallOn = false, lastT = 0, wpx = 0, wpy = 0, wtx = 0, wty = 0;
+function buildWall() {
+  const w = innerWidth < 700 ? 150 : innerWidth < 1100 ? 200 : 240, h = Math.round(w * .62), gap = innerWidth < 700 ? 12 : 18;
+  const n = innerWidth < 700 ? 4 : innerWidth < 1100 ? 6 : 7;
+  drift.style.setProperty('--dw', w + 'px'); drift.style.setProperty('--dh', h + 'px'); drift.style.setProperty('--dgap', gap + 'px');
+  plane.innerHTML = ''; cols = [];
+  const per = Math.ceil(drift.clientHeight * 1.7 / (h + gap)) + 1;
+  // 16 looks: every clip with two different frames
+  const looks = CLIPS.flatMap((c, i) => [[i, 'a'], [i, 'b']]);
+  for (let c = 0; c < n; c++) {
+    const col = document.createElement('div'); col.className = 'dcol';
+    const seq = Array.from({ length: per }, (_, k) => looks[(c * 5 + k * 3) % looks.length]);
+    [...seq, ...seq].forEach(([i, f], k) => {
+      const clip = CLIPS[i], t = document.createElement('button');
+      t.className = 'dtile'; t.dataset.i = i;
+      if (k >= per) t.tabIndex = -1;
+      t.setAttribute('aria-label', `Open example: ${clip.title}`);
+      t.innerHTML = `<img src="assets/tiles/${clip.id}-${f}.webp" alt="" loading="lazy" decoding="async"><span class="lbl">${clip.title}${clip.raw ? '<i class="r">360°</i>' : '<i>4K</i>'}</span>`;
+      col.appendChild(t);
+    });
+    plane.appendChild(col);
+    const seed = Math.sin(c * 12.9898) * 43758.5453 % 1;
+    cols.push({ el: col, half: per * (h + gap), off: Math.abs(seed) * per * (h + gap), speed: 42 * (1 + .45 * (Math.abs(seed) * 2 - 1)), dir: c % 2 ? 1 : -1 });
+  }
+}
+function driftTick(t) {
+  if (!wallOn) return;
+  requestAnimationFrame(driftTick);
+  const dt = Math.min((t - (lastT || t)) / 1000, .05); lastT = t;
+  wtx += (wpx - wtx) * .06; wty += (wpy - wty) * .06;
+  plane.style.transform = `translate(-50%,-50%) translateZ(-120px) rotateX(${16 - wty * 6}deg) rotateY(${-14 + wtx * 8}deg)`;
+  cols.forEach(c => {
+    if (!reduced) c.off = (c.off + c.speed * dt) % c.half;
+    const y = c.dir < 0 ? -c.off : c.off - c.half;
+    c.el.style.transform = `translate3d(0,${y}px,0)`;
+  });
+}
+drift.addEventListener('pointermove', e => {
+  const r = drift.getBoundingClientRect();
+  wpx = (e.clientX - r.left) / r.width * 2 - 1; wpy = (e.clientY - r.top) / r.height * 2 - 1;
+});
+drift.addEventListener('pointerleave', () => { wpx = wpy = 0; });
+// hover preview: a short loop replaces the still while the pointer is on a tile
+plane.addEventListener('pointerover', e => {
+  const t = e.target.closest('.dtile'); if (!t || t.querySelector('video') || e.pointerType === 'touch') return;
+  const v = document.createElement('video');
+  Object.assign(v, { src: `assets/tiles/${CLIPS[t.dataset.i].id}.mp4`, muted: true, loop: true, playsInline: true, autoplay: true });
+  t.insertBefore(v, t.querySelector('.lbl'));
+});
+plane.addEventListener('pointerout', e => {
+  const t = e.target.closest('.dtile'); if (!t || t.contains(e.relatedTarget)) return;
+  const v = t.querySelector('video'); if (v) v.remove();
+});
+plane.addEventListener('click', e => { const t = e.target.closest('.dtile'); if (t) openLb(+t.dataset.i); });
+inView(drift, on => { wallOn = on; lastT = 0; if (on) requestAnimationFrame(driftTick); }, '100px');
+buildWall();
+let wallW = innerWidth;
+addEventListener('resize', () => { if (Math.abs(innerWidth - wallW) > 80) { wallW = innerWidth; buildWall(); } });
+
+/* example viewer */
+const lb = $('lb'), lbVid = $('lbVid'), lbGL = $('lbGL');
+let lbIdx = 0, lbMode = 'out', lbSphere = null, lastFocus = null;
+function lbRender() {
+  const c = CLIPS[lbIdx];
+  $('lbTitle').textContent = c.title; $('lbFile').textContent = c.file;
+  $('lbSteps').innerHTML = c.steps.map((s, i) => `<span><b>${String(i + 1).padStart(2, '0')}</b>${s}</span>`).join('');
+  $('lbSeg').hidden = !c.raw;
+  if (!c.raw) lbMode = 'out';
+  [...$('lbSeg').children].forEach(b => b.classList.toggle('on', b.dataset.m === lbMode));
+  const raw = lbMode === 'raw';
+  $('lbTag').innerHTML = raw ? `IN <b>${c.file} · raw 360°</b>` : `OUT <b>${c.out}</b>`;
+  lbGL.hidden = !raw; lbVid.hidden = raw; $('lbHint').hidden = !raw;
+  if (raw) {
+    lbVid.pause();
+    if (!lbSphere) {
+      lbSphere = Sphere(lbGL, clip(c.raw), `assets/360/${c.raw}.jpg`);
+      lbSphere.view.scale = .75;
+    } else lbSphere.setSrc(clip(c.raw), `assets/360/${c.raw}.jpg`);
+  } else {
+    if (lbSphere) lbSphere.video.pause();
+    if (!lbVid.src.endsWith(c.src)) { lbVid.poster = c.poster; lbVid.src = c.src; }
+    lbVid.play().catch(() => {});
+  }
+}
+function openLb(i) {
+  lbIdx = i; lbMode = 'out'; lastFocus = document.activeElement;
+  lb.classList.add('open'); document.documentElement.style.overflow = 'hidden';
+  lbRender(); $('lbClose').focus();
+}
+function closeLb() {
+  lb.classList.remove('open'); document.documentElement.style.overflow = '';
+  lbVid.pause(); if (lbSphere) lbSphere.video.pause();
+  if (lastFocus) lastFocus.focus();
+}
+const lbStep = d => { lbIdx = (lbIdx + d + CLIPS.length) % CLIPS.length; lbMode = 'out'; lbRender(); };
+$('lbClose').addEventListener('click', closeLb);
+$('lbPrev').addEventListener('click', () => lbStep(-1));
+$('lbNext').addEventListener('click', () => lbStep(1));
+lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+$('lbSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { lbMode = b.dataset.m; lbRender(); } });
+addEventListener('keydown', e => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowRight') lbStep(1);
+  if (e.key === 'ArrowLeft') lbStep(-1);
+});
+let lbDrag = null;
+lbGL.addEventListener('pointerdown', e => { lbDrag = { x: e.clientX, y: e.clientY }; $('lbHint').hidden = true; lbGL.setPointerCapture(e.pointerId); });
+lbGL.addEventListener('pointermove', e => {
+  if (!lbDrag || !lbSphere) return;
+  const v = lbSphere.view, k = 2.2 * v.scale / lbGL.clientHeight;
+  v.yaw -= (e.clientX - lbDrag.x) * k; v.pitch = clamp(v.pitch + (e.clientY - lbDrag.y) * k, -1.3, 1.3);
+  lbDrag = { x: e.clientX, y: e.clientY };
+});
+lbGL.addEventListener('pointerup', () => lbDrag = null);
+lbGL.addEventListener('pointercancel', () => lbDrag = null);
 
 /* ---------- section background videos ---------- */
 document.querySelectorAll('.bgvid').forEach(v => {
