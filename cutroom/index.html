@@ -620,7 +620,7 @@ footer .brand img{width:24px;height:24px}
 
   <!-- 06 · any shape -->
   <section class="panel" id="shape">
-    <div class="bg"><img src="assets/video/waterfall_drop.jpg" alt="" loading="lazy" style="filter:blur(16px) brightness(.7)"></div>
+    <div class="bg"><img src="assets/video/export_0564_4k.jpg" alt="" loading="lazy" style="filter:blur(16px) brightness(.7)"></div>
     <div class="inner wrap">
       <div>
         <span class="kicker">06 — Any shape, any platform</span>
@@ -630,7 +630,7 @@ footer .brand img{width:24px;height:24px}
       <div class="glass">
         <div class="w-head"><b>Export</b><span class="mono" id="shapeRes">3840 × 2160</span></div>
         <div class="w-body">
-          <div class="frame-stage" id="frameStage"><div class="frame" id="frame"><video class="bgvid" id="shapeVid" data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" muted loop playsinline preload="none"></video></div></div>
+          <div class="frame-stage" id="frameStage"><div class="frame" id="frame"><video class="bgvid" id="shapeVid" data-src="assets/video/export_0564_4k.mp4" poster="assets/video/export_0564_4k.jpg" muted loop playsinline preload="none"></video></div></div>
           <div class="luts ratios" id="ratios">
             <button class="lut on" data-r="16:9">16:9<small>YouTube</small></button>
             <button class="lut" data-r="9:16">9:16<small>Reels · TikTok</small></button>
@@ -1187,7 +1187,7 @@ inView(bits, on => { if (on && !skyImg.src) skyImg.src = 'assets/video/hero.jpg'
 /* ---------- 06 any shape: reframe the export, list the cuts ---------- */
 const frameStage = $('frameStage'), frame = $('frame'), shapeVid = $('shapeVid');
 const RES = { '16:9': '3840 × 2160', '9:16': '2160 × 3840', '1:1': '2160 × 2160', '4:5': '1728 × 2160', '21:9': '3840 × 1646' };
-const CUTS = [[0, 1.5], [1.5, 3], [3, 4.5]];
+const CUTS = [[0, 2.3], [2.3, 4.6], [4.6, 6.9]];
 let ratio = '16:9', shapeAuto = true;
 function layoutFrame() {
   const [a, b] = ratio.split(':').map(Number), r = a / b;
@@ -1196,7 +1196,7 @@ function layoutFrame() {
   frame.style.width = w + 'px'; frame.style.height = h + 'px';
   $('shapeRes').textContent = RES[ratio];
   $('cuts').innerHTML = CUTS.map(([t0, t1], i) =>
-    `<div class="cut" data-i="${i}"><b>CUT ${i + 1}</b><span>00:0${t0.toFixed(1)} – 00:0${t1.toFixed(1)} → GS010038_cut${i + 1}_${ratio.replace(':', 'x')}.mp4</span></div>`).join('');
+    `<div class="cut" data-i="${i}"><b>CUT ${i + 1}</b><span>00:0${t0.toFixed(1)} – 00:0${t1.toFixed(1)} → GS010564_cut${i + 1}_${ratio.replace(':', 'x')}.mp4</span></div>`).join('');
   [...$('ratios').children].forEach(x => x.classList.toggle('on', x.dataset.r === ratio));
 }
 $('ratios').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { shapeAuto = false; ratio = b.dataset.r; layoutFrame(); } });
