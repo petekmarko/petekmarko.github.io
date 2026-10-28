@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cutroom — the 360° video editor</title>
-<meta name="description" content="Cutroom makes 360° footage easy to edit. Save settings as presets and apply them to every clip, render all clips at once, colour grade and add LUTs.">
+<meta name="description" content="Cutroom is a 360° video editor for Mac. Open GoPro MAX .360 files directly, aim the shot after you film, stabilize with the camera's gyro, grade in true 10-bit and export any shape.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <meta property="og:title" content="Cutroom — the 360° video editor">
 <meta property="og:description" content="Shoot it all. Cut it later.">
@@ -175,6 +175,65 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .panel .num{display:none}
 }
 
+.panel.solo{position:relative}
+
+/* widget: opens .360 */
+.stitch{position:relative;aspect-ratio:2/1;border-radius:10px;overflow:hidden;background:#000}
+.stitch img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stitch .lenses{object-fit:fill;animation:unwrap 6s cubic-bezier(.6,0,.3,1) infinite}
+.stitch .scan{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--amber);box-shadow:0 0 18px 2px rgba(242,179,61,.7);animation:scan 6s cubic-bezier(.6,0,.3,1) infinite}
+.st-tag{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:4px 7px;border-radius:5px;background:rgba(0,0,0,.6);animation:tagSwap 6s infinite}
+@keyframes unwrap{0%,14%{clip-path:inset(0 0 0 0)}62%,90%{clip-path:inset(0 0 0 100%)}100%{clip-path:inset(0 0 0 0)}}
+@keyframes scan{0%,14%{left:0;opacity:1}62%{left:100%;opacity:1}63%,100%{left:100%;opacity:0}}
+@keyframes tagSwap{0%,40%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+.chips-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chips-row span{font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#d6d4cd}
+
+/* widget: editor minimap */
+.minimap{position:absolute;z-index:2;right:12px;bottom:12px;width:26%;max-width:220px;aspect-ratio:2/1;border-radius:8px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.4);cursor:crosshair;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.minimap img{width:100%;height:100%;object-fit:fill;filter:brightness(.75)}
+.minimap i{position:absolute;border:2px solid var(--amber);border-radius:3px;background:rgba(242,179,61,.12);pointer-events:none;transition:opacity .3s}
+
+/* widget: stabilization */
+.stab-vid{transform:scale(1.14);will-change:transform}
+.seg-row{display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.06);margin-bottom:14px}
+.seg-row button{flex:1;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;color:#cfcdc6;transition:background .2s,color .2s}
+.seg-row button.on{background:var(--ink);color:#111}
+.gyro{display:block;width:100%;height:96px;border-radius:8px;background:rgba(0,0,0,.28)}
+.gyro-key{display:flex;align-items:center;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.gyro-key i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.gyro-key b{margin-left:auto;color:var(--ink);font-weight:500}
+
+/* widget: grading tabs */
+.tabs{display:flex;gap:2px}
+.tabs button{padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--mute);transition:background .2s,color .2s}
+.tabs button.on{background:rgba(255,255,255,.12);color:var(--ink)}
+.w-note{margin-top:12px;font-size:13px;line-height:1.5;color:var(--mute)}
+
+/* widget: 10-bit */
+.bits{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#000;touch-action:pan-y;--split:50%}
+.bits canvas{position:absolute;inset:0;width:100%;height:100%}
+.bits .hi{clip-path:inset(0 0 0 var(--split))}
+.bits .split-tag{top:10px}
+.bits .split-tag.l{left:calc(var(--split) - 62px)}
+
+/* widget: any shape */
+.frame-stage{height:210px;border-radius:10px;background:rgba(0,0,0,.35);display:grid;place-items:center;overflow:hidden}
+.frame{position:relative;border-radius:6px;overflow:hidden;outline:2px solid var(--amber);outline-offset:2px;transition:width .55s cubic-bezier(.2,.7,.2,1),height .55s cubic-bezier(.2,.7,.2,1)}
+.frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ratios{margin-top:14px}
+.ratios .lut{padding:8px 12px;font-size:13px;display:flex;gap:6px;align-items:baseline}
+.ratios small{font-weight:500;font-size:11px;opacity:.65}
+.cuts{margin-top:12px}
+.cut{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);font-family:var(--mono);font-size:11px;color:var(--mute);transition:color .25s}
+.cut:last-child{border-bottom:0}
+.cut b{font-weight:500;color:var(--dim)}
+.cut.on{color:var(--ink)}
+.cut.on b{color:var(--amber)}
+@media (max-width:900px){.frame-stage{height:170px}.minimap{width:32%}}
+@media (max-width:900px) and (max-height:740px){.frame-stage{height:130px}.cuts{display:none}.bits{aspect-ratio:16/8}}
+
 /* widget: presets */
 .w-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
 .w-head b{font-weight:700;font-size:15px}
@@ -208,7 +267,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .grade-view{position:absolute;inset:0;overflow:hidden;touch-action:pan-y}
 .grade-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .grade-view .raw{filter:saturate(.35) contrast(.72) brightness(1.08)}
-.grade-view .graded{clip-path:inset(0 0 0 var(--split,50%))}
+.grade-view .graded{position:absolute;inset:0;clip-path:inset(0 0 0 var(--split,50%));transition:filter .4s}
+.grade-view .sec{-webkit-mask-size:cover;mask-size:cover;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .grade-view::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(90deg,rgba(14,15,17,.85) 0%,rgba(14,15,17,.4) 40%,rgba(14,15,17,0) 70%)}
 .split-line{position:absolute;top:0;bottom:0;left:var(--split,50%);width:2px;margin-left:-1px;background:#fff;z-index:2;cursor:ew-resize}
@@ -228,14 +288,13 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   .split-line span{top:24%}
 }
 
-/* widget: LUTs */
+/* widget: chip buttons */
 .luts{display:flex;flex-wrap:wrap;gap:8px}
 .lut{padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:14px;font-weight:600;background:rgba(255,255,255,.04);transition:background .2s,color .2s,border-color .2s}
 .lut:hover{background:rgba(255,255,255,.1)}
 .lut.on{background:var(--ink);color:#111;border-color:var(--ink)}
 .lut-file{margin-top:16px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px dashed rgba(255,255,255,.25);border-radius:12px;font-family:var(--mono);font-size:12px;color:var(--mute)}
 .lut-file svg{width:22px;height:22px;flex:none}
-.lut-bg img{transition:filter .6s}
 
 /* ---------- showcase (finished exports) ---------- */
 .showcase{position:relative;height:450vh}
@@ -328,7 +387,8 @@ footer .brand img{width:24px;height:24px}
 .rv.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){
   .rv{opacity:1;transform:none;transition:none}
-  .ticker-track,.drag-hint svg,.hero video,.hero h1 span,.hero-side{animation:none}
+  .ticker-track,.drag-hint svg,.hero video,.hero h1 span,.hero-side,.stitch .lenses,.stitch .scan,.st-tag{animation:none}
+  .stitch .lenses,.stitch .scan{display:none}
 }
 </style>
 </head>
@@ -337,9 +397,8 @@ footer .brand img{width:24px;height:24px}
 <nav class="nav" id="nav">
   <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Cutroom</a>
   <ul>
-    <li><a href="#edit">Editing</a></li>
-    <li><a href="#presets">Presets</a></li>
-    <li><a href="#render">Batch render</a></li>
+    <li><a href="#open">Features</a></li>
+    <li><a href="#stab">Stabilization</a></li>
     <li><a href="#grade">Colour</a></li>
     <li><a href="#made">Made with Cutroom</a></li>
     <li><a href="#examples">Examples</a></li>
@@ -357,10 +416,10 @@ footer .brand img{width:24px;height:24px}
   <div class="hero-copy">
     <h1><span>Shoot it all.</span><span class="o">Cut it later.</span></h1>
     <div class="hero-side">
-      <p>Cutroom makes 360° footage easy. Reframe, grade and render a whole day on the river in one go.</p>
+      <p>The 360° video editor for Mac. Open GoPro MAX .360 files directly, aim the shot after you film, then grade and export it in any shape.</p>
       <div class="row">
         <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
-        <a href="#edit" class="btn ghost">See how it works</a>
+        <a href="#open" class="btn ghost">See how it works</a>
       </div>
     </div>
   </div>
@@ -368,8 +427,8 @@ footer .brand img{width:24px;height:24px}
 
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
-    <span>Easy 360° editing</span><span>Presets</span><span>Apply to all clips</span><span>Batch render</span><span>Colour grading</span><span>LUTs</span>
-    <span>Easy 360° editing</span><span>Presets</span><span>Apply to all clips</span><span>Batch render</span><span>Colour grading</span><span>LUTs</span>
+    <span>Opens .360 directly</span><span>Aim after you shoot</span><span>Gyro stabilization</span><span>Colour grading</span><span>.cube LUTs</span><span>True 10-bit</span><span>16:9 · 9:16 · 1:1 · 4:5 · 21:9</span>
+    <span>Opens .360 directly</span><span>Aim after you shoot</span><span>Gyro stabilization</span><span>Colour grading</span><span>.cube LUTs</span><span>True 10-bit</span><span>16:9 · 9:16 · 1:1 · 4:5 · 21:9</span>
   </div>
 </div>
 
@@ -382,25 +441,50 @@ footer .brand img{width:24px;height:24px}
 </section>
 
 <!-- 01 · easy 360 editing -->
+<!-- 01 · opens .360 files -->
+<section class="panel solo" id="open">
+  <div class="bg"><img src="assets/img/norway-tier.webp" alt="" loading="lazy"></div>
+  <div class="inner wrap">
+    <div>
+      <span class="kicker">01 — Opens .360 files directly</span>
+      <h2 class="big">Drop in the .360.<br>Start editing.</h2>
+      <p class="lede">Bring your GoPro MAX or MAX 2 .360 files straight in. No converting in GoPro Player first. Cutroom stitches both lenses live on your Mac's graphics chip.</p>
+    </div>
+    <div class="glass">
+      <div class="w-head"><b>GS010564.360</b><span class="mono">Live stitch</span></div>
+      <div class="w-body">
+        <div class="stitch">
+          <img src="assets/demo/stitched.webp" alt="The stitched 360° panorama of a kayaker in a gorge" loading="lazy">
+          <img class="lenses" src="assets/demo/lenses.webp" alt="The two raw lens tracks as stored inside the .360 file" loading="lazy">
+          <i class="scan"></i>
+          <span class="st-tag">RAW .360 · 2 LENS TRACKS</span>
+        </div>
+        <div class="chips-row"><span>GoPro MAX</span><span>GoPro MAX 2</span><span>No GoPro Player</span><span>Stitched on the GPU</span></div>
+      </div>
+    </div>
+  </div>
+  <span class="num">01 / 06</span>
+</section>
+
 <section class="reframe" id="edit">
   <div class="reframe-stick">
     <div class="bg"><img src="assets/img/riverbank.webp" alt="" loading="lazy"></div>
     <div class="reframe-grid">
       <div class="steps">
         <div class="step on">
-          <span class="kicker">01 — Easy 360° editing</span>
-          <h2>Point the camera anywhere. Later.</h2>
-          <p>Your 360° clip holds every angle at once. Drag the view to find the line, the boof, or your friend behind you.</p>
+          <span class="kicker">02 — Point the camera after you shoot</span>
+          <h2>Aim the shot after you film it.</h2>
+          <p>Drag to look around and scroll to zoom. The minimap shows the whole sphere, so one click aims your shot anywhere. Try it on the clip.</p>
         </div>
         <div class="step">
-          <span class="kicker">01 — Easy 360° editing</span>
-          <h2>Direct the shot like a camera op.</h2>
-          <p>Drop keyframes on the timeline and Cutroom eases the camera between them. Pans, tilts and punch-ins, all from one helmet cam.</p>
+          <span class="kicker">02 — Point the camera after you shoot</span>
+          <h2>Animate it with keyframes.</h2>
+          <p>Set a few keyframes and Cutroom eases the pans and zooms between them. Smooth camera moves from one helmet cam.</p>
         </div>
         <div class="step">
-          <span class="kicker">01 — Easy 360° editing</span>
-          <h2>Then turn the river into a planet.</h2>
-          <p>Slide from flat to fisheye to tiny planet in one smooth move. It's just another keyframe.</p>
+          <span class="kicker">02 — Point the camera after you shoot</span>
+          <h2>Go wide for a tiny planet.</h2>
+          <p>Pull the field of view all the way out and the river wraps into a little planet. It's just another keyframe.</p>
         </div>
         <div class="progress-dots"><i class="on"></i><i></i><i></i></div>
       </div>
@@ -414,6 +498,7 @@ footer .brand img{width:24px;height:24px}
             Drag to look around
           </div>
           <div class="ed-safe" id="edSafe"></div>
+          <div class="minimap" id="minimap" title="Click to aim the camera"><img src="assets/360/drop.jpg" alt="Minimap of the whole 360° sphere"><i id="mmBox"></i></div>
           <div class="ed-tag" id="edTag">VIEW · Rectilinear</div>
         </div>
         <div class="ed-time">
@@ -433,12 +518,139 @@ footer .brand img{width:24px;height:24px}
 </section>
 
 <div class="stack" id="stack">
-  <!-- 02 · presets -->
-  <section class="panel" id="presets">
-    <div class="bg"><img src="assets/img/norway-tier.webp" alt="" loading="lazy"></div>
+  <!-- 03 · stabilization -->
+  <section class="panel" id="stab">
+    <div class="bg"><video class="bgvid stab-vid" id="stabVid" data-src="assets/video/canyon_bg.mp4" poster="assets/video/canyon_bg.jpg" muted loop playsinline preload="none"></video></div>
     <div class="inner wrap">
       <div>
-        <span class="kicker">02 — Presets</span>
+        <span class="kicker">03 — Stabilization</span>
+        <h2 class="big">Steady when it gets rough.</h2>
+        <p class="lede">Cutroom uses the camera's own motion and gravity sensors, so it holds steady through spray, whitewater and hard hits where picture-based stabilization loses track. Keep the horizon level automatically, or lock the view completely.</p>
+      </div>
+      <div class="glass">
+        <div class="w-head"><b>Stabilization</b><span class="mono">Gyro + gravity</span></div>
+        <div class="w-body">
+          <div class="seg-row" id="stabSeg"><button data-m="off">Off</button><button data-m="level" class="on">Level horizon</button><button data-m="lock">Locked</button></div>
+          <canvas class="gyro" id="gyro" aria-label="Live camera motion sensor readout"></canvas>
+          <div class="gyro-key"><span><i style="background:#e8705a"></i>Roll</span><span><i style="background:var(--teal)"></i>Pitch</span><span><i style="background:var(--violet)"></i>Yaw</span><b id="stabOut">Horizon 0.0°</b></div>
+        </div>
+      </div>
+    </div>
+    <span class="num">03 / 06</span>
+  </section>
+
+  <!-- 04 · colour grading -->
+  <section class="panel" id="grade">
+    <div class="grade-view" id="gradeView">
+      <img class="raw" src="assets/img/soca-boof.webp" alt="" loading="lazy">
+      <div class="graded" id="gradedWrap">
+        <img id="gradedImg" src="assets/img/soca-boof.webp" alt="Kayaker in a pink boat boofing between white limestone rocks" loading="lazy">
+        <img class="sec" id="secWater" src="assets/img/soca-boof.webp" alt="" loading="lazy" style="-webkit-mask-image:url(assets/demo/mask-water.webp);mask-image:url(assets/demo/mask-water.webp)">
+        <img class="sec" id="secBoat" src="assets/img/soca-boof.webp" alt="" loading="lazy" style="-webkit-mask-image:url(assets/demo/mask-boat.webp);mask-image:url(assets/demo/mask-boat.webp)">
+      </div>
+      <span class="split-tag l">UNGRADED</span><span class="split-tag r">GRADED</span>
+      <div class="split-line" id="splitLine"><span><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
+    </div>
+    <div class="inner wrap">
+      <div>
+        <span class="kicker">04 — Real colour grading</span>
+        <h2 class="big">Pro grading. No learning curve.</h2>
+        <p class="lede">A node-based grade like the pro tools: brightness, contrast, white balance and saturation. Secondary grading changes just the sky, water or skin in one click. Import your favourite .cube LUTs, or save your own grade as a LUT for Resolve, Premiere or Final Cut.</p>
+      </div>
+      <div class="glass">
+        <div class="w-head"><div class="tabs" id="gTabs"><button class="on" data-t="p">Primary</button><button data-t="s">Secondary</button><button data-t="l">LUTs</button></div><span class="mono">Node 1</span></div>
+        <div class="w-body">
+          <div class="tabp sliders" data-t="p">
+            <label class="sl">BRIGHTNESS<input type="range" id="gExp" min="-50" max="50" value="6"><output>+6</output></label>
+            <label class="sl">CONTRAST<input type="range" id="gCon" min="-50" max="50" value="14"><output>+14</output></label>
+            <label class="sl">WHITE BAL<input type="range" id="gTmp" min="-50" max="50" value="-8"><output>−8</output></label>
+            <label class="sl">SATURATION<input type="range" id="gSat" min="-50" max="50" value="22"><output>+22</output></label>
+          </div>
+          <div class="tabp" data-t="s" hidden>
+            <div class="luts" id="secPick"><button class="lut on" data-k="water">Water</button><button class="lut" data-k="boat">Boat</button></div>
+            <div class="sliders" style="margin-top:14px">
+              <label class="sl">HUE<input type="range" id="sHue" min="-60" max="60" value="0"><output>0</output></label>
+              <label class="sl">SATURATION<input type="range" id="sSat" min="-50" max="50" value="0"><output>0</output></label>
+            </div>
+            <p class="w-note">Only the selected area changes. The rest of the shot stays put.</p>
+          </div>
+          <div class="tabp" data-t="l" hidden>
+            <div class="luts" id="lutList">
+              <button class="lut on" data-f="">None</button>
+              <button class="lut" data-f="saturate(1.35) contrast(1.12) hue-rotate(-6deg)">Glacier</button>
+              <button class="lut" data-f="sepia(.28) saturate(1.45) contrast(1.12) hue-rotate(-12deg)">Teal &amp; Orange</button>
+              <button class="lut" data-f="saturate(.62) contrast(.88) brightness(1.08)">Nordic Fade</button>
+              <button class="lut" data-f="grayscale(1) contrast(1.25) brightness(1.05)">Mono</button>
+            </div>
+            <div class="lut-file">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
+              Import .cube LUTs · export your grade as .cube for Resolve, Premiere or Final Cut
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="num">04 / 06</span>
+  </section>
+
+  <!-- 05 · true 10-bit -->
+  <section class="panel" id="tenbit">
+    <div class="bg"><img src="assets/video/hero.jpg" alt="" loading="lazy" style="filter:blur(8px)"></div>
+    <div class="inner wrap">
+      <div>
+        <span class="kicker">05 — True 10-bit</span>
+        <h2 class="big">10-bit in.<br>10-bit out.</h2>
+        <p class="lede">10-bit footage from the GoPro MAX 2 stays 10-bit from the file to the export. Smooth skies and gradients, no banding. Export in HEVC 10-bit or H.264.</p>
+      </div>
+      <div class="glass">
+        <div class="w-head"><b>Graded sky, up close</b><span class="mono">Simulated</span></div>
+        <div class="w-body">
+          <div class="bits" id="bits">
+            <canvas id="bits8" aria-label="Sky after grading in 8-bit, showing banding"></canvas>
+            <canvas id="bits10" class="hi" aria-label="Sky after grading in 10-bit, smooth"></canvas>
+            <span class="split-tag l">8-BIT</span><span class="split-tag r">10-BIT</span>
+            <div class="split-line" id="bitsLine"><span><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
+          </div>
+          <div class="chips-row"><span>GoPro MAX 2 · 10-bit</span><span>HEVC 10-bit</span><span>H.264</span></div>
+        </div>
+      </div>
+    </div>
+    <span class="num">05 / 06</span>
+  </section>
+
+  <!-- 06 · any shape -->
+  <section class="panel" id="shape">
+    <div class="bg"><img src="assets/video/waterfall_drop.jpg" alt="" loading="lazy" style="filter:blur(16px) brightness(.7)"></div>
+    <div class="inner wrap">
+      <div>
+        <span class="kicker">06 — Any shape, any platform</span>
+        <h2 class="big">One clip.<br>Every shape.</h2>
+        <p class="lede">16:9 for YouTube, 9:16 for Reels and TikTok, 1:1, 4:5 or 21:9. Up to 4K. Cut one clip into several shots, and each cut exports as its own video.</p>
+      </div>
+      <div class="glass">
+        <div class="w-head"><b>Export</b><span class="mono" id="shapeRes">3840 × 2160</span></div>
+        <div class="w-body">
+          <div class="frame-stage" id="frameStage"><div class="frame" id="frame"><video class="bgvid" id="shapeVid" data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" muted loop playsinline preload="none"></video></div></div>
+          <div class="luts ratios" id="ratios">
+            <button class="lut on" data-r="16:9">16:9<small>YouTube</small></button>
+            <button class="lut" data-r="9:16">9:16<small>Reels · TikTok</small></button>
+            <button class="lut" data-r="1:1">1:1</button>
+            <button class="lut" data-r="4:5">4:5</button>
+            <button class="lut" data-r="21:9">21:9</button>
+          </div>
+          <div class="cuts" id="cuts"></div>
+        </div>
+      </div>
+    </div>
+    <span class="num">06 / 06</span>
+  </section>
+
+  <!-- workflow · presets -->
+  <section class="panel" id="presets">
+    <div class="bg"><img src="assets/img/celebrate.webp" alt="" loading="lazy" style="object-position:center 72%"></div>
+    <div class="inner wrap">
+      <div>
+        <span class="kicker">Workflow — Presets</span>
         <h2 class="big">Save it once.<br>Apply it to everything.</h2>
         <p class="lede">Dial in the framing, horizon lock, grade and export settings once, then save them as a preset. One click applies it to every clip from the day.</p>
       </div>
@@ -456,15 +668,14 @@ footer .brand img{width:24px;height:24px}
         </div>
       </div>
     </div>
-    <span class="num">02 / 05</span>
   </section>
 
-  <!-- 03 · batch render -->
+  <!-- workflow · batch render -->
   <section class="panel" id="render">
-    <div class="bg"><video class="bgvid" data-src="assets/video/canyon_bg.mp4" poster="assets/video/canyon_bg.jpg" muted loop playsinline preload="none"></video></div>
+    <div class="bg"><img src="assets/video/export_0555_hq.jpg" alt="" loading="lazy"></div>
     <div class="inner wrap">
       <div>
-        <span class="kicker">03 — Batch render</span>
+        <span class="kicker">Workflow — Batch render</span>
         <h2 class="big">Render every clip at once.</h2>
         <p class="lede">Queue the whole card and Cutroom renders all your clips at the same time. Start it, grab a coffee, and the edit's done when you get back.</p>
       </div>
@@ -476,65 +687,8 @@ footer .brand img{width:24px;height:24px}
         </div>
       </div>
     </div>
-    <span class="num">03 / 05</span>
   </section>
 
-  <!-- 04 · colour grading -->
-  <section class="panel" id="grade">
-    <div class="grade-view" id="gradeView">
-      <img class="raw" src="assets/img/soca-boof.webp" alt="" loading="lazy">
-      <img class="graded" id="gradedImg" src="assets/img/soca-boof.webp" alt="Kayaker in a pink boat boofing between white limestone rocks" loading="lazy">
-      <span class="split-tag l">UNGRADED</span><span class="split-tag r">GRADED</span>
-      <div class="split-line" id="splitLine"><span><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
-    </div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">04 — Colour grading</span>
-        <h2 class="big">Grade it the way you remember it.</h2>
-        <p class="lede">Flat camera colour in, turquoise water out. Exposure, contrast, saturation and temperature, right in the editor. Try it, or drag the line.</p>
-      </div>
-      <div class="glass">
-        <div class="w-head"><b>Colour</b><span class="mono">Live</span></div>
-        <div class="w-body sliders">
-          <label class="sl">EXPOSURE<input type="range" id="gExp" min="-50" max="50" value="6"><output>+6</output></label>
-          <label class="sl">CONTRAST<input type="range" id="gCon" min="-50" max="50" value="14"><output>+14</output></label>
-          <label class="sl">SATURATION<input type="range" id="gSat" min="-50" max="50" value="22"><output>+22</output></label>
-          <label class="sl">TEMP<input type="range" id="gTmp" min="-50" max="50" value="-8"><output>−8</output></label>
-        </div>
-      </div>
-    </div>
-    <span class="num">04 / 05</span>
-  </section>
-
-  <!-- 05 · LUTs -->
-  <section class="panel" id="luts">
-    <div class="bg lut-bg"><img id="lutImg" style="object-position:center 72%" src="assets/img/celebrate.webp" alt="Three kayakers celebrating below a waterfall" loading="lazy"></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">05 — LUTs</span>
-        <h2 class="big">Drop in a LUT. Done.</h2>
-        <p class="lede">Bring your own LUTs or use the built-in looks, then save the look into a preset so every clip matches. Tap one to try it.</p>
-      </div>
-      <div class="glass">
-        <div class="w-head"><b>Looks</b><span class="mono" id="lutName">None</span></div>
-        <div class="w-body">
-          <div class="luts" id="lutList">
-            <button class="lut on" data-f="none">None</button>
-            <button class="lut" data-f="saturate(1.35) contrast(1.12) hue-rotate(-6deg)">Glacier</button>
-            <button class="lut" data-f="sepia(.28) saturate(1.45) contrast(1.12) hue-rotate(-12deg)">Teal &amp; Orange</button>
-            <button class="lut" data-f="saturate(.62) contrast(.88) brightness(1.08)">Nordic Fade</button>
-            <button class="lut" data-f="sepia(.4) saturate(1.2) contrast(1.06) brightness(1.02)">Warm Film</button>
-            <button class="lut" data-f="grayscale(1) contrast(1.25) brightness(1.05)">Mono</button>
-          </div>
-          <div class="lut-file">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
-            Drop your own LUT file here
-          </div>
-        </div>
-      </div>
-    </div>
-    <span class="num">05 / 05</span>
-  </section>
 </div>
 
 <!-- made with cutroom -->
@@ -565,9 +719,9 @@ footer .brand img{width:24px;height:24px}
     <span class="kicker">Workflow</span>
     <h2 class="big rv">Card to cut in three moves.</h2>
     <div class="flow-grid">
-      <div class="flow-item glass rv"><span class="n">01 / Import</span><h3>Drop the card</h3><p>Pull in every 360° clip from the day. Cutroom gives you a live preview of each one straight away.</p></div>
-      <div class="flow-item glass rv"><span class="n">02 / Apply</span><h3>One preset, all clips</h3><p>Frame and grade one clip, save it as a preset, and apply it to the rest instantly.</p></div>
-      <div class="flow-item glass rv"><span class="n">03 / Render</span><h3>Render them all</h3><p>Hit render once. Every clip exports at the same time, ready to post.</p></div>
+      <div class="flow-item glass rv"><span class="n">01 / Import</span><h3>Drop the .360s</h3><p>Straight off the card, no GoPro Player. Cutroom stitches every clip live so you can start right away.</p></div>
+      <div class="flow-item glass rv"><span class="n">02 / Direct</span><h3>Aim, steady, grade</h3><p>Point the camera, lock the horizon and grade one clip. Save it as a preset and apply it to the rest.</p></div>
+      <div class="flow-item glass rv"><span class="n">03 / Export</span><h3>Every shape at once</h3><p>16:9, 9:16 and more, up to 4K in 10-bit. Every cut renders as its own video, all at the same time.</p></div>
     </div>
   </div>
 </section>
@@ -736,7 +890,7 @@ inView(heroVid, on => on && !reduced ? heroVid.play().catch(() => {}) : heroVid.
 /* ---------- 01 editor: scroll-driven camera ---------- */
 const E = Sphere($('edGL'), clip('drop'), 'assets/360/drop.jpg');
 const edView = $('edGL').parentElement;
-let edDrag = null, offYaw = 0, offPitch = 0;
+let edDrag = null, offYaw = 0, offPitch = 0, offZoom = 1;
 edView.addEventListener('pointerdown', e => { edDrag = { x: e.clientX, y: e.clientY }; $('dragHint').classList.add('gone'); edView.setPointerCapture(e.pointerId); });
 edView.addEventListener('pointermove', e => {
   if (!edDrag) return;
@@ -746,6 +900,23 @@ edView.addEventListener('pointermove', e => {
 });
 const edEnd = () => edDrag = null;
 edView.addEventListener('pointerup', edEnd); edView.addEventListener('pointercancel', edEnd);
+// pinch (or ctrl + scroll) zooms the view; plain scrolling keeps scrolling the page
+edView.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  offZoom = clamp(offZoom * Math.exp(e.deltaY * .01), .45, 2.2);
+}, { passive: false });
+// minimap: the whole sphere as an equirectangular strip; click to aim
+const minimap = $('minimap'), mmBox = $('mmBox');
+const wrapPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+minimap.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  const r = minimap.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, w = (e.clientY - r.top) / r.height;
+  const [y, p] = sampleKF(scrollT), v = E.view;
+  offYaw = v.yaw + wrapPi((.5 - u) * 2 * Math.PI - v.yaw) - y * Math.PI / 180;
+  offPitch = clamp((.5 - w) * Math.PI - p * Math.PI / 180, -1.2, 1.2);
+  $('dragHint').classList.add('gone');
+});
 const reframe = $('edit');
 const steps = [...document.querySelectorAll('.step')], dots = [...document.querySelectorAll('.progress-dots i')];
 // keyframes along scroll progress: [t, yaw°, pitch°, scale, dist]
@@ -769,7 +940,11 @@ function sampleKF(t) {
 E.onFrame = video => {
   const [y, p, s, d] = sampleKF(scrollT), v = E.view;
   v.yaw = lerp(v.yaw, y * Math.PI / 180 + offYaw, .18); v.pitch = lerp(v.pitch, clamp(p * Math.PI / 180 + offPitch, -1.57, 1.57), .18);
-  v.scale = lerp(v.scale, s, .18); v.dist = lerp(v.dist, d, .18);
+  v.scale = lerp(v.scale, s * offZoom, .18); v.dist = lerp(v.dist, d, .18);
+  const asp = edView.clientWidth / edView.clientHeight;
+  const bw = 2 * Math.atan(v.scale * asp) / (2 * Math.PI), bh = 2 * Math.atan(v.scale) / Math.PI;
+  const u = (((.5 - v.yaw / (2 * Math.PI)) % 1) + 1) % 1, w = .5 - v.pitch / Math.PI;
+  mmBox.style.cssText = `left:${(u - bw / 2) * 100}%;top:${(w - bh / 2) * 100}%;width:${bw * 100}%;height:${bh * 100}%;opacity:${v.dist > .4 ? 0 : 1}`;
   $('pYaw').textContent = ((deg(v.yaw) % 360) + 360) % 360 + '°';
   $('pPitch').textContent = deg(v.pitch) + '°';
   $('pFov').textContent = deg(2 * Math.atan(v.scale)) + '°';
@@ -873,30 +1048,172 @@ function renderTick() {
 inView($('renderW'), on => { renderOn = on && !reduced; if (renderOn) renderTick(); });
 if (reduced) jobs.forEach(j => { j.bar.style.width = '100%'; j.pc.textContent = '100%'; j.el.classList.add('done'); });
 
-/* ---------- 04 grading: split + sliders ---------- */
-const gv = $('gradeView'), gImg = $('gradedImg');
+/* ---------- 03 stabilization: shake the clip unless stabilized ---------- */
+const stabVid = $('stabVid'), gyro = $('gyro'), gctx = gyro.getContext('2d');
+let stabMode = 'level', stabAuto = true, stabOn = false, stabT = 0, stabLast = 0;
+const hist = [];
+// rough-water motion: a few incommensurate swells plus the odd hard hit
+const motion = t => {
+  const hit = Math.exp(-(((t % 3.7) - .4) ** 2) * 30) * Math.sin(t * 40);
+  return {
+    roll: 5 * Math.sin(t * 2.3) + 2.5 * Math.sin(t * 5.7 + 1) + 7 * hit,
+    pitch: 3 * Math.sin(t * 1.7 + 2) + 2 * Math.sin(t * 6.3) + 4 * hit,
+    yaw: 2.5 * Math.sin(t * .9 + .5) + 1.5 * Math.sin(t * 4.1),
+  };
+};
+for (let i = 160; i > 0; i--) hist.push(motion(-i / 60));
+function setStab(m) {
+  stabMode = m;
+  [...$('stabSeg').children].forEach(b => b.classList.toggle('on', b.dataset.m === m));
+}
+$('stabSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stabAuto = false; setStab(b.dataset.m); } });
+function stabTick(now) {
+  if (!stabOn) return;
+  requestAnimationFrame(stabTick);
+  const dt = Math.min((now - (stabLast || now)) / 1000, .05); stabLast = now; stabT += dt;
+  if (stabAuto) setStab(['off', 'level', 'lock'][Math.floor(stabT / 3) % 3]);
+  const m = motion(stabT);
+  const roll = stabMode === 'off' ? m.roll : 0;
+  const sx = stabMode === 'lock' ? 0 : m.yaw * 6, sy = stabMode === 'lock' ? 0 : m.pitch * 5;
+  stabVid.style.transform = `scale(1.14) translate(${sx}px,${sy}px) rotate(${roll}deg)`;
+  $('stabOut').textContent = `Horizon ${roll >= 0 ? '+' : '−'}${Math.abs(roll).toFixed(1)}°`;
+  // sensor trace keeps showing the raw motion: the camera still moves, the picture doesn't
+  hist.push(m); if (hist.length > 160) hist.shift();
+  const dpr = Math.min(devicePixelRatio || 1, 2), W = gyro.clientWidth * dpr, Hh = gyro.clientHeight * dpr;
+  if (gyro.width !== W) { gyro.width = W; gyro.height = Hh; }
+  gctx.clearRect(0, 0, W, Hh);
+  gctx.strokeStyle = 'rgba(255,255,255,.12)'; gctx.lineWidth = dpr;
+  gctx.beginPath(); gctx.moveTo(0, Hh / 2); gctx.lineTo(W, Hh / 2); gctx.stroke();
+  [['roll', '#e8705a'], ['pitch', '#2e9e8a'], ['yaw', '#8b7be8']].forEach(([k, c]) => {
+    gctx.strokeStyle = c; gctx.lineWidth = 1.6 * dpr; gctx.beginPath();
+    hist.forEach((h, i) => { const x = i / 159 * W, y = Hh / 2 - h[k] / 14 * (Hh / 2 - 4); i ? gctx.lineTo(x, y) : gctx.moveTo(x, y); });
+    gctx.stroke();
+  });
+}
+inView(gyro, on => { stabOn = on && !reduced; stabLast = 0; if (stabOn) requestAnimationFrame(stabTick); });
+
+/* ---------- 04 grading: primary, secondary, LUT ---------- */
+const gv = $('gradeView'), gWrap = $('gradedWrap'), gImg = $('gradedImg');
 const sliders = ['gExp', 'gCon', 'gSat', 'gTmp'].map($);
+const sec = { water: { el: $('secWater'), h: 0, s: 0 }, boat: { el: $('secBoat'), h: 0, s: 0 } };
+let secKey = 'water';
+const sign = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
 function applyGrade() {
   const [e, c, s, t] = sliders.map(x => +x.value);
-  sliders.forEach(x => x.nextElementSibling.textContent = (x.value > 0 ? '+' : x.value < 0 ? '−' : '') + Math.abs(x.value));
+  sliders.forEach(x => x.nextElementSibling.textContent = sign(+x.value));
   const warm = t > 0 ? `sepia(${t / 160})` : `hue-rotate(${t * .25}deg)`;
-  gImg.style.filter = `brightness(${1 + e / 120}) contrast(${1 + c / 90}) saturate(${1 + s / 55}) ${warm}`;
+  const primary = `brightness(${1 + e / 120}) contrast(${1 + c / 90}) saturate(${1 + s / 55}) ${warm}`;
+  gImg.style.filter = primary;
+  Object.values(sec).forEach(r => r.el.style.filter = `${primary} hue-rotate(${r.h}deg) saturate(${1 + r.s / 50})`);
 }
-sliders.forEach(x => x.addEventListener('input', applyGrade)); applyGrade();
-const setSplit = x => { const r = gv.getBoundingClientRect(); gv.style.setProperty('--split', clamp((x - r.left) / r.width * 100, 8, 96) + '%'); };
-let splitting = false;
-$('splitLine').addEventListener('pointerdown', e => { splitting = true; e.currentTarget.setPointerCapture(e.pointerId); });
-$('splitLine').addEventListener('pointermove', e => splitting && setSplit(e.clientX));
-$('splitLine').addEventListener('pointerup', () => splitting = false);
-gv.style.setProperty('--split', innerWidth < 900 ? '50%' : '36%');
-
-/* ---------- 05 LUTs ---------- */
-const lutBtns = [...document.querySelectorAll('.lut')];
+sliders.forEach(x => x.addEventListener('input', applyGrade));
+const sHue = $('sHue'), sSat = $('sSat');
+function showSec() {
+  sHue.value = sec[secKey].h; sSat.value = sec[secKey].s;
+  sHue.nextElementSibling.textContent = sign(+sHue.value) + '°'; sSat.nextElementSibling.textContent = sign(+sSat.value);
+  [...$('secPick').children].forEach(b => b.classList.toggle('on', b.dataset.k === secKey));
+}
+[sHue, sSat].forEach(x => x.addEventListener('input', () => { sec[secKey].h = +sHue.value; sec[secKey].s = +sSat.value; showSec(); applyGrade(); }));
+$('secPick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { secKey = b.dataset.k; showSec(); } });
+applyGrade(); showSec();
+let secShown = false;
+$('gTabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('gTabs').children].forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('#grade .tabp').forEach(p => p.hidden = p.dataset.t !== b.dataset.t);
+  // first visit to Secondary: swing the water hue so the selective change is obvious
+  if (b.dataset.t === 's' && !secShown && !reduced) {
+    secShown = true; secKey = 'water';
+    const t0 = performance.now();
+    (function tween(now) {
+      const k = Math.min((now - t0) / 900, 1);
+      sec.water.h = Math.round(ease(k) * 34); sec.water.s = Math.round(ease(k) * 18);
+      showSec(); applyGrade();
+      if (k < 1) requestAnimationFrame(tween);
+    })(t0);
+  }
+});
+const lutBtns = [...$('lutList').children];
 lutBtns.forEach(b => b.addEventListener('click', () => {
   lutBtns.forEach(x => x.classList.toggle('on', x === b));
-  $('lutImg').style.filter = b.dataset.f;
-  $('lutName').textContent = b.textContent;
+  gWrap.style.filter = b.dataset.f;
 }));
+// draggable before/after lines (grading photo and the 10-bit sky)
+function splitter(line, area) {
+  let on = false;
+  line.addEventListener('pointerdown', e => { on = true; line.setPointerCapture(e.pointerId); });
+  line.addEventListener('pointermove', e => {
+    if (!on) return;
+    const r = area.getBoundingClientRect();
+    area.style.setProperty('--split', clamp((e.clientX - r.left) / r.width * 100, 8, 96) + '%');
+  });
+  line.addEventListener('pointerup', () => on = false);
+}
+splitter($('splitLine'), gv);
+gv.style.setProperty('--split', innerWidth < 900 ? '50%' : '36%');
+
+/* ---------- 05 10-bit: the same graded sky through an 8-bit and a 10-bit pipeline ---------- */
+const bits = $('bits');
+splitter($('bitsLine'), bits);
+const skyImg = new Image();
+skyImg.onload = () => {
+  // sky only (top of the frame), softened so the clouds become broad gradients
+  const W = 640, Hc = 400, sh = skyImg.height * .36, sw = sh * W / Hc, sx = skyImg.width * .22;
+  const src = document.createElement('canvas'); src.width = W; src.height = Hc;
+  const sc = src.getContext('2d');
+  sc.filter = 'blur(14px)';
+  sc.drawImage(skyImg, sx, 0, sw, sh, -30, -30, W + 60, Hc + 60);
+  const base = sc.getImageData(0, 0, W, Hc).data;
+  // a strong grade: deepen the blue and stretch contrast, which pulls 8-bit steps apart
+  const grade = (v, ch) => clamp((v - 160) * 1.5 + 150 + (ch === 2 ? 14 : ch === 0 ? -12 : 0), 0, 255);
+  [['bits8', 8], ['bits10', 10]].forEach(([id, depth]) => {
+    const cv = $(id); cv.width = W; cv.height = Hc;
+    const cx = cv.getContext('2d'), out = cx.createImageData(W, Hc), o = out.data;
+    for (let i = 0; i < base.length; i += 4) {
+      for (let ch = 0; ch < 3; ch++) {
+        let v = base[i + ch];
+        // 8-bit: whole steps before the grade stretches them apart (exaggerated ×6 so it reads on screen)
+        if (depth === 8) v = Math.round(v / 6) * 6;
+        else v += Math.random() - .5;
+        o[i + ch] = grade(v, ch);
+      }
+      o[i + 3] = 255;
+    }
+    cx.putImageData(out, 0, 0);
+  });
+};
+inView(bits, on => { if (on && !skyImg.src) skyImg.src = 'assets/video/hero.jpg'; }, '600px');
+
+/* ---------- 06 any shape: reframe the export, list the cuts ---------- */
+const frameStage = $('frameStage'), frame = $('frame'), shapeVid = $('shapeVid');
+const RES = { '16:9': '3840 × 2160', '9:16': '2160 × 3840', '1:1': '2160 × 2160', '4:5': '1728 × 2160', '21:9': '3840 × 1646' };
+const CUTS = [[0, 1.5], [1.5, 3], [3, 4.5]];
+let ratio = '16:9', shapeAuto = true;
+function layoutFrame() {
+  const [a, b] = ratio.split(':').map(Number), r = a / b;
+  const W = frameStage.clientWidth - 28, Hs = frameStage.clientHeight - 28;
+  const w = W / Hs > r ? Hs * r : W, h = w / r;
+  frame.style.width = w + 'px'; frame.style.height = h + 'px';
+  $('shapeRes').textContent = RES[ratio];
+  $('cuts').innerHTML = CUTS.map(([t0, t1], i) =>
+    `<div class="cut" data-i="${i}"><b>CUT ${i + 1}</b><span>00:0${t0.toFixed(1)} – 00:0${t1.toFixed(1)} → GS010038_cut${i + 1}_${ratio.replace(':', 'x')}.mp4</span></div>`).join('');
+  [...$('ratios').children].forEach(x => x.classList.toggle('on', x.dataset.r === ratio));
+}
+$('ratios').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { shapeAuto = false; ratio = b.dataset.r; layoutFrame(); } });
+shapeVid.addEventListener('timeupdate', () => {
+  const t = shapeVid.currentTime;
+  document.querySelectorAll('#cuts .cut').forEach((c, i) => c.classList.toggle('on', t >= CUTS[i][0] && t < CUTS[i][1] + (i === 2 ? 1 : 0)));
+});
+let shapeTimer = null;
+inView(frameStage, on => {
+  clearInterval(shapeTimer);
+  if (on && !reduced) shapeTimer = setInterval(() => {
+    if (!shapeAuto) return;
+    const keys = Object.keys(RES); ratio = keys[(keys.indexOf(ratio) + 1) % keys.length]; layoutFrame();
+  }, 2600);
+});
+layoutFrame();
+addEventListener('resize', layoutFrame);
 
 /* ---------- showcase: reel of finished clips, one per scroll step ---------- */
 const show = $('made'), reel = [...show.querySelectorAll('video')];
