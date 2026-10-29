@@ -3,392 +3,248 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cutroom — the 360° video editor</title>
-<meta name="description" content="Cutroom is a 360° video editor for Mac. Open GoPro MAX .360 files directly, aim the shot after you film, stabilize with the camera's gyro, grade in true 10-bit and export any shape.">
+<title>Cutroom — the 360° video editor for Mac</title>
+<meta name="description" content="Cutroom is a 360° video editor for Mac. Grade and frame every clip at once, save presets, build looks in a node tree with LUTs and colour spaces, and preview .360 files with Quick Look.">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<meta property="og:title" content="Cutroom — the 360° video editor">
-<meta property="og:description" content="Shoot it all. Cut it later.">
-<meta property="og:image" content="assets/img/soca-boof.webp">
+<meta property="og:title" content="Cutroom — the 360° video editor for Mac">
+<meta property="og:description" content="Edit a whole day of 360 footage. All at once.">
+<meta property="og:image" content="assets/v2/app-camera.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/v2/app-camera.webp">
 <style>
 :root{
-  --bg:#0e0f11; --bg2:#141518; --panel:#1b1c1f; --line:#2a2b30; --line2:#34353a;
-  --ink:#eceae4; --mute:#a3a29d; --dim:#6b6b68;
-  --blue:#4c6aa0; --teal:#2e9e8a; --amber:#f2b33d; --violet:#8b7be8;
-  --glass:rgba(16,17,20,.62);
+  --bg:#0f0f11; --bg2:#141416; --panel:#1b1b1e; --panel2:#222226; --line:#2a2a2f; --line2:#35353b;
+  --ink:#ececea; --mute:#a0a0a6; --dim:#6a6a70;
+  --blue:#6ea8f5; --blue2:#3f7fd6; --purple:#b98cf0; --orange:#f0a540; --green:#7bc072; --amber:#f2b33d;
   --sans:"Inter Tight",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
-  --gut:clamp(16px,4vw,56px);
+  --gut:clamp(16px,4vw,56px); --ease:cubic-bezier(.2,.7,.2,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+html{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
 body{background:var(--bg);overflow-x:clip}
 img,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 [hidden]{display:none !important}
-::selection{background:var(--amber);color:#111}
+::selection{background:var(--blue);color:#0b0b0c}
+.wrap{width:100%;max-width:1240px;margin-inline:auto;padding-inline:var(--gut)}
+.mono{font-family:var(--mono)}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:18px}
+.kicker b{font-weight:500;color:var(--dim)}
+h2{font-weight:800;font-size:clamp(36px,5.2vw,68px);line-height:.95;letter-spacing:-.045em}
+.lede{color:var(--mute);font-size:clamp(16px,1.35vw,18px);line-height:1.6;max-width:46ch;margin-top:20px}
+.btn{display:inline-flex;align-items:center;gap:9px;border-radius:10px;padding:12px 18px;font-weight:600;font-size:15px;background:var(--blue);color:#0b1422;transition:transform .2s,background .2s}
+.btn:hover{background:#8bbaf8;transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.btn.ghost:hover{background:rgba(255,255,255,.05)}
+.sec{padding:clamp(96px,14vh,160px) 0;content-visibility:auto;contain-intrinsic-size:auto 900px}
+.sec-head{max-width:640px;margin-bottom:clamp(36px,6vh,56px)}
 
-.mono{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.wrap{padding-inline:var(--gut);max-width:1440px;margin-inline:auto;width:100%}
-.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:20px}
-.big{font-weight:900;font-size:clamp(44px,7vw,112px);line-height:.88;letter-spacing:-.055em}
-.lede{color:#d6d4cd;font-size:clamp(16px,1.4vw,19px);line-height:1.55;max-width:42ch}
-
-/* full-bleed photo backgrounds */
-.bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.bg img,.bg video{width:100%;height:100%;object-fit:cover}
-.bg::after{content:"";position:absolute;inset:0;background:var(--shade,linear-gradient(180deg,rgba(14,15,17,.55),rgba(14,15,17,.85)))}
-.glass{background:var(--glass);border:1px solid rgba(255,255,255,.12);border-radius:18px;
-  backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);box-shadow:0 30px 90px -30px rgba(0,0,0,.7)}
+/* app-look building blocks */
+.win{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 40px 100px -40px rgba(0,0,0,.8)}
+.win-bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.win-bar i{width:11px;height:11px;border-radius:50%;background:#3a3a40}
+.win-bar .t{margin:0 auto;font-size:12px;color:var(--mute);font-weight:600;transform:translateX(-24px)}
+.ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border-radius:7px;font-size:13px;font-weight:600;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);transition:background .2s,border-color .2s}
+.ui-btn:hover{background:#2b2b30}
+.ui-btn.pri{background:var(--blue);border-color:var(--blue);color:#0b1422}
+.ui-btn.pri:hover{background:#8bbaf8}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.tag.cam{background:rgba(110,168,245,.16);color:#9cc4fa;border:1px solid rgba(110,168,245,.35)}
+.tag.col{background:rgba(185,140,240,.16);color:#d2b3f6;border:1px solid rgba(185,140,240,.35)}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 
 /* ---------- nav ---------- */
-.nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;
-  padding:14px var(--gut);transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
-.nav.solid{background:rgba(14,15,17,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:rgba(255,255,255,.08)}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:-.03em}
-.brand img{width:30px;height:30px}
-.nav ul{display:flex;gap:28px;list-style:none;font-size:14px;color:#c9c7c0}
-.nav ul a:hover{color:#fff}
-.btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:12px 20px;font-weight:600;font-size:14px;
-  background:var(--ink);color:#111;transition:transform .2s,background .2s}
-.btn:hover{transform:translateY(-1px);background:#fff}
-.btn.ghost{background:rgba(14,15,17,.35);color:var(--ink);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.btn.ghost:hover{background:rgba(255,255,255,.1)}
-.btn .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
-@media (max-width:860px){.nav ul{display:none}.nav .btn{padding:9px 14px}}
+.nav{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px var(--gut);transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(15,15,17,.88);border-color:var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.03em}
+.brand img{width:28px;height:28px}
+.nav ul{display:flex;gap:26px;list-style:none;font-size:14px;color:var(--mute)}
+.nav ul a:hover{color:var(--ink)}
+.nav .btn{padding:9px 14px;font-size:14px}
+@media (max-width:900px){.nav ul{display:none}}
 
 /* ---------- hero ---------- */
-.hero{position:relative;height:100svh;min-height:560px;overflow:hidden;background:#0b0c0e url(assets/video/hero.jpg) center/cover}
-.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:heroIn 2.4s cubic-bezier(.2,.7,.2,1) both}
-@keyframes heroIn{from{transform:scale(1.08);filter:brightness(.6)}to{transform:none;filter:none}}
-.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(14,15,17,.5) 0%,rgba(14,15,17,0) 22%,rgba(14,15,17,0) 45%,rgba(14,15,17,.92) 100%)}
-.hero-copy{position:absolute;z-index:2;left:var(--gut);right:var(--gut);bottom:clamp(28px,7vh,80px);pointer-events:none;
-  display:grid;grid-template-columns:1fr auto;align-items:end;gap:32px}
-.hero h1{font-weight:900;font-size:clamp(48px,10.5vw,168px);line-height:.86;letter-spacing:-.055em}
-.hero h1 span{display:block}
-.hero h1 .o{color:transparent;-webkit-text-stroke:1.5px var(--ink)}
-.hero-side{max-width:340px;pointer-events:auto}
-.hero-side p{color:#d6d4cd;font-size:17px;line-height:1.5;margin-bottom:22px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.drag-hint{position:absolute;z-index:2;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;
-  padding:10px 16px;border-radius:999px;background:rgba(14,15,17,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.14);pointer-events:none;transition:opacity .6s;color:#ddd}
-.drag-hint.gone{opacity:0}
-.drag-hint svg{width:22px;height:22px;animation:sway 2.4s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
-.hero h1 span{animation:rise 1.2s cubic-bezier(.2,.7,.2,1) both}
-.hero h1 span+span{animation-delay:.15s}
-.hero-side{animation:rise 1.2s .3s cubic-bezier(.2,.7,.2,1) both}
-@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-.hud{position:absolute;z-index:2;top:84px;right:var(--gut);text-align:right;pointer-events:none;line-height:1.9;color:#d8d6cf;
-  padding:10px 14px;border-radius:10px;background:rgba(14,15,17,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
-.hud b{color:var(--amber);font-weight:500}
-@media (max-width:860px){.hero-copy{grid-template-columns:1fr}.hud{display:none}}
+.hero{position:relative;padding-top:clamp(110px,16vh,150px);text-align:center;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:80%;background:radial-gradient(50% 60% at 50% 30%,rgba(110,168,245,.16),transparent 70%);pointer-events:none}
+.hero .eyebrow{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);padding:6px 12px;border:1px solid rgba(110,168,245,.35);border-radius:999px;margin-bottom:24px}
+.hero h1{font-weight:900;font-size:clamp(44px,7.6vw,104px);line-height:.92;letter-spacing:-.055em;max-width:13ch;margin-inline:auto}
+.hero h1 span{color:var(--blue)}
+.hero p{color:var(--mute);font-size:clamp(17px,1.5vw,20px);line-height:1.55;max-width:46ch;margin:24px auto 30px}
+.hero .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hero-copy > *{animation:rise .9s var(--ease) both}
+.hero-copy > :nth-child(2){animation-delay:.08s}.hero-copy > :nth-child(3){animation-delay:.16s}.hero-copy > :nth-child(4){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.mac{position:relative;width:min(1180px,calc(100% - 2*var(--gut)));margin:clamp(48px,8vh,80px) auto 0;perspective:1600px}
+.mac-tilt{transform:rotateX(calc(var(--tilt,1) * 14deg)) scale(calc(1 - var(--tilt,1) * .04));transform-origin:50% 100%;transition:transform .1s linear;will-change:transform}
+.mac-lid{position:relative;padding:1.4% 1.4% 0;background:#0a0a0b;border:1px solid #2c2c31;border-bottom:0;border-radius:18px 18px 0 0;box-shadow:0 60px 120px -50px rgba(110,168,245,.25)}
+.mac-screen{position:relative;aspect-ratio:1440/811;overflow:hidden;border-radius:6px 6px 0 0;background:#161616}
+.mac-screen img{width:100%;height:100%}
+/* the live preview area of the real Cutroom window */
+.mac-vid{position:absolute;left:20.9%;top:27.87%;width:48.68%;height:48.58%;object-fit:cover;background:#000}
+.mac-base{height:clamp(10px,1.6vw,20px);margin:0 -6%;background:linear-gradient(#cfd0d4,#8d8f95);border-radius:0 0 18px 18px;position:relative}
+.mac-base::before{content:"";position:absolute;left:50%;top:0;width:14%;height:45%;transform:translateX(-50%);background:#a7a9ae;border-radius:0 0 8px 8px}
+.hero-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.hero-chips span{font-family:var(--mono);font-size:12px;color:var(--mute);padding:6px 10px;border:1px solid var(--line);border-radius:8px}
 
-/* ---------- ticker ---------- */
-.ticker{border-block:1px solid var(--line);overflow:hidden;padding:18px 0;background:var(--bg);position:relative;z-index:2}
-.ticker-track{display:flex;gap:48px;width:max-content;animation:tick 34s linear infinite}
-.ticker-track span{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);white-space:nowrap;display:flex;align-items:center;gap:48px}
-.ticker-track span::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--amber)}
-@keyframes tick{to{transform:translateX(-50%)}}
+/* ---------- 01 apply to all / render all ---------- */
+.gal-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.gal-bar .lbl{margin-right:auto}
+.gal-bar .preset{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;padding:16px}
+.card{position:relative}
+.thumb{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#111}
+.thumb img{width:100%;height:100%;object-fit:cover;filter:saturate(.45) contrast(.8) brightness(1.06);transition:filter .6s var(--ease)}
+.card.graded .thumb img{filter:none}
+.thumb .pbar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.5)}
+.thumb .pbar i{display:block;height:100%;width:0;background:var(--blue)}
+.thumb .done{position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,15,17,.45);opacity:0;transition:opacity .4s}
+.thumb .done span{width:30px;height:30px;border-radius:50%;background:var(--blue);display:grid;place-items:center;color:#0b1422;transform:scale(.5);transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.card.exported .done{opacity:1}.card.exported .done span{transform:none}
+.card .nm{margin-top:9px;font-weight:600;font-size:14px}
+.card .meta{margin-top:3px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.card .tags{display:flex;gap:6px;margin-top:8px;min-height:22px}
+.card .tags .tag{opacity:0;transform:translateY(6px) scale(.9);transition:opacity .35s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+.card.graded .tags .tag{opacity:1;transform:none}
+.gal-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--mute)}
+.gal-foot b{color:var(--ink);font-weight:500}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.steps3 div{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.steps3 b{display:block;font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:500;margin-bottom:10px}
+.steps3 p{color:var(--mute);font-size:14px;line-height:1.5}
+@media (max-width:760px){.gal{grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}.steps3{grid-template-columns:1fr}.card .meta{display:none}}
 
-/* ---------- statement ---------- */
-.statement{position:relative;min-height:120svh;display:flex;align-items:center;overflow:hidden}
-.statement .bg{--shade:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,.45) 25%,rgba(14,15,17,.45) 70%,var(--bg) 100%)}
-.statement .bg img{transform:scale(calc(1.15 - var(--p,0) * .12))}
-.statement .wrap{position:relative;z-index:1;padding-block:120px}
-.statement p{font-weight:800;font-size:clamp(32px,5.4vw,84px);line-height:1.02;letter-spacing:-.045em;max-width:16ch;text-shadow:0 4px 40px rgba(0,0,0,.4)}
-.statement p .w{opacity:.2;transition:opacity .25s}
-.statement p .w.on{opacity:1}
-.statement p .hl{color:var(--amber)}
+/* ---------- 02 presets ---------- */
+.split{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(28px,5vw,72px);align-items:center}
+@media (max-width:960px){.split{grid-template-columns:1fr}}
+.pv{position:relative;height:clamp(220px,28vw,320px);display:grid;place-items:center;background:#0c0c0d;border-bottom:1px solid var(--line)}
+.pv-frame{position:relative;overflow:hidden;border-radius:4px;transition:width .5s var(--ease),height .5s var(--ease)}
+.pv-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:filter .5s var(--ease)}
+.pv-hud{position:absolute;left:12px;top:12px;display:flex;gap:6px}
+.pv-hud span{font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,.6);color:#ddd}
+.pp{padding:14px 16px 16px}
+.pp h4{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--mute);font-weight:500;margin:6px 0 10px}
+.pcards{display:grid;gap:8px}
+.pcard{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);text-align:left;transition:border-color .2s,background .2s}
+.pcard:hover{border-color:var(--line2)}
+.pcard.on{border-color:var(--blue);background:rgba(110,168,245,.07)}
+.pcard.col.on{border-color:var(--purple);background:rgba(185,140,240,.07)}
+.pcard b{font-size:14px;font-weight:700}
+.pcard small{grid-column:1;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.pcard .ui-btn{grid-row:1/3;grid-column:2;padding:6px 11px;font-size:12px}
+.pcard.new{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
+.checks label{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mute);cursor:pointer}
+.checks input{accent-color:var(--blue);width:15px;height:15px}
+.save-row{display:flex;gap:8px;margin-top:4px}
+.save-row input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:9px 11px;color:var(--ink);font:inherit;font-size:14px}
+.save-row input:focus{outline:none;border-color:var(--blue)}
+.applied{font-family:var(--mono);font-size:12px;color:var(--green);min-height:18px;margin-top:10px}
 
-/* ---------- reframe (sticky, feature 01) ---------- */
-.reframe{position:relative;height:460vh}
-.reframe-stick{position:sticky;top:0;height:100svh;overflow:hidden}
-.reframe .bg{--shade:linear-gradient(90deg,rgba(14,15,17,.9) 0%,rgba(14,15,17,.65) 45%,rgba(14,15,17,.5) 100%)}
-.reframe .bg img{filter:blur(2px);transform:scale(1.04)}
-.reframe-grid{position:relative;z-index:1;height:100%;display:grid;grid-template-columns:minmax(260px,.8fr) 1.6fr;gap:clamp(24px,4vw,64px);
-  align-items:center;padding:80px var(--gut) 32px;max-width:1600px;margin-inline:auto}
-.steps{position:relative;min-height:320px}
-.step{position:absolute;inset:0;opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
-.step.on{opacity:1;transform:none}
-.step h2{font-weight:900;font-size:clamp(36px,4.6vw,72px);line-height:.92;letter-spacing:-.05em;margin-bottom:20px}
-.step p{color:#cfcdc6;font-size:17px;line-height:1.55;max-width:36ch}
-.progress-dots{display:flex;gap:8px;position:absolute;bottom:-56px}
-.progress-dots i{width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);transition:background .3s}
-.progress-dots i.on{background:var(--ink)}
+/* ---------- 03 node tree ---------- */
+.nt-view{position:relative;height:clamp(240px,46vh,460px);background:#000;overflow:hidden;touch-action:pan-y}
+.nt-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nt-view .graded{position:absolute;inset:0;clip-path:inset(0 0 0 var(--split,0%))}
+.nt-view .sec-layer{-webkit-mask:url(assets/demo/mask-water.webp) center/cover no-repeat;mask:url(assets/demo/mask-water.webp) center/cover no-repeat;opacity:0;transition:opacity .4s}
+.nt-tag{position:absolute;left:12px;top:12px;font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,.6)}
+.seg{position:absolute;right:12px;top:12px;display:flex;background:rgba(20,20,22,.9);border:1px solid var(--line2);border-radius:9px;padding:3px}
+.seg button{padding:6px 11px;border-radius:7px;font-size:12px;font-weight:600;color:var(--mute)}
+.seg button.on{background:var(--blue);color:#0b1422}
+.ba{position:absolute;top:0;bottom:0;left:var(--split,50%);width:2px;margin-left:-1px;background:#fff;cursor:ew-resize;z-index:2}
+.ba span{position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center}
+.nt-strip{padding:12px 14px 16px;border-top:1px solid var(--line)}
+.nt-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.nt-top .lbl{margin-right:6px}
+.nt-top p{font-size:12px;color:var(--dim);margin-right:auto}
+.nt-add{padding:6px 10px;font-size:12px}
+.flow{display:flex;align-items:center;gap:0;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:thin}
+.io{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--mute);flex:none}
+.io i{width:9px;height:9px;border-radius:50%;background:var(--green)}
+.wire{flex:none;width:30px;height:2px;background:#3a3a40}
+.node{position:relative;flex:none;width:158px;padding:9px 11px;border-radius:9px;border:1.5px solid var(--c);background:var(--panel2);text-align:left;transition:opacity .25s,transform .25s}
+.node.off{opacity:.38}
+.node.new{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+.node b{display:flex;align-items:center;gap:6px;font-size:13px}
+.node b em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--c);font-weight:500}
+.node b i{margin-left:auto;width:10px;height:10px;border-radius:50%;background:var(--c)}
+.node small{display:block;margin-top:3px;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node .x{position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:#3a3a40;font-size:11px;line-height:18px;text-align:center;opacity:0;transition:opacity .2s}
+.node:hover .x{opacity:1}
+.nt-hint{margin-top:10px;font-size:12px;color:var(--dim)}
 
-.editor{background:rgba(27,28,31,.9);border:1px solid var(--line2);border-radius:18px;overflow:hidden;box-shadow:0 40px 120px -40px rgba(0,0,0,.9);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.ed-bar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
-.ed-bar i{width:11px;height:11px;border-radius:50%;background:#3a3b40}
-.ed-bar .mono{margin-left:auto;font-size:11px;letter-spacing:.08em}
-.ed-view{position:relative;aspect-ratio:16/9;background:#000;cursor:grab;touch-action:pan-y}
-.ed-view:active{cursor:grabbing}
-.ed-view canvas{position:absolute;inset:0;width:100%;height:100%}
-.ed-tag{position:absolute;left:14px;top:14px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.55);font-family:var(--mono);font-size:11px;color:#ddd;letter-spacing:.06em}
-.ed-safe{position:absolute;inset:9%;border:1px dashed rgba(255,255,255,.22);border-radius:6px;pointer-events:none;transition:opacity .4s}
-.ed-time{padding:14px 16px 18px;border-top:1px solid var(--line)}
-.ed-params{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-family:var(--mono);font-size:11px;color:var(--dim)}
-.ed-params b{color:var(--ink);font-weight:500}
-.track{position:relative;height:30px;border-radius:7px;margin-bottom:8px;overflow:hidden}
-.track.video{background:linear-gradient(90deg,var(--blue),#5a78ad 40%,var(--teal));opacity:.9}
-.track.video::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 58px,rgba(0,0,0,.25) 58px 60px)}
-.track.cam{background:#24252a;height:22px;overflow:visible}
-.track.cam .line{position:absolute;left:0;right:0;top:50%;height:2px;background:var(--violet);opacity:.35}
-.kf{position:absolute;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;transform:rotate(45deg) scale(.4);background:var(--violet);
-  border:2px solid var(--panel);opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .3s}
-.kf.on{transform:rotate(45deg) scale(1);opacity:1}
-.track.audio{height:18px;background:#202125;background-image:repeating-linear-gradient(90deg,#3c3d43 0 2px,transparent 2px 5px)}
-.timeline{position:relative}
-.playhead{position:absolute;top:-6px;bottom:-4px;width:2px;background:var(--amber);border-radius:2px;left:0;box-shadow:0 0 12px rgba(242,179,61,.6)}
-.playhead::before{content:"";position:absolute;top:-4px;left:-5px;width:12px;height:8px;border-radius:2px;background:var(--amber)}
-@media (max-width:900px){
-  .reframe{height:420vh}
-  .reframe-grid{grid-template-columns:1fr;align-content:center;gap:24px;padding-top:72px}
-  .steps{min-height:200px;order:2}
-  .step h2{font-size:34px;margin-bottom:12px}
-  .step p{font-size:15px}
-  .progress-dots,.ed-params{display:none}
-}
+/* ---------- 04 quick look ---------- */
+.finder{display:grid;grid-template-columns:170px 1fr;min-height:420px;position:relative}
+.f-side{padding:14px 10px;border-right:1px solid var(--line);background:var(--bg2);font-size:13px}
+.f-side b{display:block;font-size:11px;color:var(--dim);font-weight:600;margin:12px 8px 6px}
+.f-side span{display:block;padding:5px 8px;border-radius:6px;color:var(--mute)}
+.f-side span.on{background:rgba(255,255,255,.07);color:var(--ink)}
+.f-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:18px 10px;padding:18px;align-content:start}
+.file{display:flex;flex-direction:column;align-items:center;gap:7px;padding:8px 4px;border-radius:8px;text-align:center}
+.file .ic{width:100%;aspect-ratio:16/10;border-radius:5px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.file .ic img{width:100%;height:100%;object-fit:cover}
+.file small{font-size:12px;padding:2px 6px;border-radius:5px;color:var(--ink)}
+.file.sel{background:rgba(255,255,255,.06)}
+.file.sel small{background:var(--blue2);color:#fff}
+.ql{position:absolute;left:50%;top:50%;width:min(620px,88%);transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;border-radius:12px;overflow:hidden;background:#1e1e21;border:1px solid #3a3a40;box-shadow:0 30px 80px rgba(0,0,0,.7);transition:transform .35s cubic-bezier(.3,1.3,.5,1),opacity .25s}
+.ql.open{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+.ql-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #333}
+.ql-bar b{font-size:13px;margin-right:auto}
+.ql video{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
+.ql-foot{padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--mute)}
+.space-key{display:inline-flex;align-items:center;gap:10px;margin-top:26px}
+.space-key kbd{font-family:var(--mono);font-size:13px;padding:10px 34px;border-radius:9px;border:1px solid var(--line2);border-bottom-width:3px;background:var(--panel2);color:var(--ink);cursor:pointer;transition:transform .1s}
+.space-key kbd:active,.space-key kbd.down{transform:translateY(2px);border-bottom-width:1px}
+.space-key span{font-size:14px;color:var(--mute)}
+@media (max-width:760px){.finder{grid-template-columns:1fr}.f-side{display:none}.f-grid{grid-template-columns:repeat(3,1fr);padding:12px}}
 
-/* ---------- stacked feature panels ---------- */
-.stack{position:relative}
-.panel{position:sticky;top:0;height:100svh;min-height:640px;overflow:hidden;display:flex;align-items:center;
-  border-top:1px solid rgba(255,255,255,.08)}
-.panel .inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr minmax(320px,480px);gap:clamp(24px,5vw,80px);align-items:center;
-  transform:scale(calc(1 - var(--cover,0) * .06));transform-origin:50% 0;opacity:calc(1 - var(--cover,0) * .7);pointer-events:none}
-.panel .inner .glass{pointer-events:auto}
-.panel .bg{--shade:linear-gradient(90deg,rgba(14,15,17,.88) 0%,rgba(14,15,17,.55) 50%,rgba(14,15,17,.35) 100%)}
-.panel .bg img{transform:scale(calc(1.08 - var(--enter,1) * .08))}
-.panel .lede{margin-top:22px}
-.panel .num{position:absolute;right:var(--gut);bottom:28px;z-index:1;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.55)}
-@media (max-width:900px){
-  .panel{align-items:flex-end;padding-bottom:28px;min-height:100svh}
-  .panel .inner{grid-template-columns:1fr;gap:22px}
-  .panel .bg{--shade:linear-gradient(180deg,rgba(14,15,17,.35) 0%,rgba(14,15,17,.75) 45%,rgba(14,15,17,.92) 100%)}
-  .panel .big{font-size:40px}
-  .panel .lede{font-size:15px;margin-top:14px}
-  .panel .num{display:none}
-}
+/* ---------- more ---------- */
+.more{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mcard{padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.mcard svg{width:28px;height:28px;margin-bottom:26px;color:var(--blue)}
+.mcard h3{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.mcard p{color:var(--mute);font-size:14px;line-height:1.55}
+.try{grid-column:1/-1;display:grid;grid-template-columns:1fr 1.6fr;align-items:center;gap:28px;padding:22px}
+.try-view{position:relative;aspect-ratio:16/8;border-radius:10px;overflow:hidden;background:#000 url(assets/360/drop.jpg) center/cover;cursor:pointer;touch-action:pan-y}
+.try-view canvas{position:absolute;inset:0;width:100%;height:100%}
+.try-view button{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.35)}
+.try-view button span{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:var(--ink);color:#111;font-weight:700;font-size:14px}
+.try-view.live{cursor:grab}
+.try-view.live:active{cursor:grabbing}
+@media (max-width:960px){.more{grid-template-columns:repeat(2,1fr)}.try{grid-template-columns:1fr}}
+@media (max-width:560px){.more{grid-template-columns:1fr}}
 
-.panel.solo{position:relative}
-
-/* widget: opens .360 */
-.stitch{position:relative;aspect-ratio:2/1;border-radius:10px;overflow:hidden;background:#000}
-.stitch img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.stitch .lenses{object-fit:fill;animation:unwrap 6s cubic-bezier(.6,0,.3,1) infinite}
-.stitch .scan{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--amber);box-shadow:0 0 18px 2px rgba(242,179,61,.7);animation:scan 6s cubic-bezier(.6,0,.3,1) infinite}
-.st-tag{position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:4px 7px;border-radius:5px;background:rgba(0,0,0,.6);animation:tagSwap 6s infinite}
-@keyframes unwrap{0%,14%{clip-path:inset(0 0 0 0)}62%,90%{clip-path:inset(0 0 0 100%)}100%{clip-path:inset(0 0 0 0)}}
-@keyframes scan{0%,14%{left:0;opacity:1}62%{left:100%;opacity:1}63%,100%{left:100%;opacity:0}}
-@keyframes tagSwap{0%,40%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
-.chips-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.chips-row span{font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#d6d4cd}
-
-/* widget: editor minimap */
-.minimap{position:absolute;z-index:2;right:12px;bottom:12px;width:26%;max-width:220px;aspect-ratio:2/1;border-radius:8px;overflow:hidden;
-  border:1px solid rgba(255,255,255,.4);cursor:crosshair;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.minimap img{width:100%;height:100%;object-fit:fill;filter:brightness(.75)}
-.minimap i{position:absolute;border:2px solid var(--amber);border-radius:3px;background:rgba(242,179,61,.12);pointer-events:none;transition:opacity .3s}
-
-/* widget: stabilization */
-.stab-vid{transform:scale(1.14);will-change:transform}
-.seg-row{display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.06);margin-bottom:14px}
-.seg-row button{flex:1;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;color:#cfcdc6;transition:background .2s,color .2s}
-.seg-row button.on{background:var(--ink);color:#111}
-.gyro{display:block;width:100%;height:96px;border-radius:8px;background:rgba(0,0,0,.28)}
-.gyro-key{display:flex;align-items:center;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--mute)}
-.gyro-key i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
-.gyro-key b{margin-left:auto;color:var(--ink);font-weight:500}
-
-/* widget: grading tabs */
-.tabs{display:flex;gap:2px}
-.tabs button{padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--mute);transition:background .2s,color .2s}
-.tabs button.on{background:rgba(255,255,255,.12);color:var(--ink)}
-.w-note{margin-top:12px;font-size:13px;line-height:1.5;color:var(--mute)}
-
-/* widget: 10-bit */
-.bits{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#000;touch-action:pan-y;--split:50%}
-.bits canvas{position:absolute;inset:0;width:100%;height:100%}
-.bits .hi{clip-path:inset(0 0 0 var(--split))}
-.bits .split-tag{top:10px}
-.bits .split-tag.l{left:calc(var(--split) - 62px)}
-
-/* widget: any shape */
-.frame-stage{height:210px;border-radius:10px;background:rgba(0,0,0,.35);display:grid;place-items:center;overflow:hidden}
-.frame{position:relative;border-radius:6px;overflow:hidden;outline:2px solid var(--amber);outline-offset:2px;transition:width .55s cubic-bezier(.2,.7,.2,1),height .55s cubic-bezier(.2,.7,.2,1)}
-.frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ratios{margin-top:14px}
-.ratios .lut{padding:8px 12px;font-size:13px;display:flex;gap:6px;align-items:baseline}
-.ratios small{font-weight:500;font-size:11px;opacity:.65}
-.cuts{margin-top:12px}
-.cut{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);font-family:var(--mono);font-size:11px;color:var(--mute);transition:color .25s}
-.cut:last-child{border-bottom:0}
-.cut b{font-weight:500;color:var(--dim)}
-.cut.on{color:var(--ink)}
-.cut.on b{color:var(--amber)}
-@media (max-width:900px){.frame-stage{height:170px}.minimap{width:32%}}
-@media (max-width:900px) and (max-height:740px){.frame-stage{height:130px}.cuts{display:none}.bits{aspect-ratio:16/8}}
-
-/* widget: presets */
-.w-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
-.w-head b{font-weight:700;font-size:15px}
-.w-body{padding:16px 18px 18px}
-.preset-props{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.preset-props div{background:rgba(255,255,255,.05);border-radius:10px;padding:9px 11px;font-family:var(--mono);font-size:11px;color:var(--mute)}
-.preset-props div b{display:block;color:var(--ink);font-weight:500;font-size:13px;margin-top:3px}
-.clips{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px}
-.clip{position:relative;aspect-ratio:16/10;border-radius:6px;overflow:hidden;background-size:cover;background-position:center;filter:saturate(.35) brightness(.75);transition:filter .4s}
-.clip::after{content:"";position:absolute;right:4px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--amber) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6.2l2 2 4-4.4' fill='none' stroke='%23111' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100%;
-  transform:scale(0);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
-.clip.done{filter:none}
-.clip.done::after{transform:scale(1)}
-.apply{width:100%;justify-content:center}
-.apply[disabled]{opacity:.7;cursor:default}
-
-/* widget: render queue */
-.job{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)}
-.job:last-child{border-bottom:0}
-.job .th{grid-row:span 2;width:54px;height:34px;border-radius:6px;background-size:cover;background-position:center}
-.job .nm{font-family:var(--mono);font-size:12px}
-.job .pc{font-family:var(--mono);font-size:12px;color:var(--mute);text-align:right;min-width:42px}
-.bar{grid-column:2/4;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}
-.bar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--teal))}
-.job.done .bar i{background:var(--teal)}
-.job.done .pc{color:var(--teal)}
-.render-foot{display:flex;justify-content:space-between;padding-top:12px;font-family:var(--mono);font-size:11px;color:var(--mute)}
-.render-foot b{color:var(--amber);font-weight:500}
-
-/* widget: grading */
-.grade-view{position:absolute;inset:0;overflow:hidden;touch-action:pan-y}
-.grade-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.grade-view .raw{filter:saturate(.35) contrast(.72) brightness(1.08)}
-.grade-view .graded{position:absolute;inset:0;clip-path:inset(0 0 0 var(--split,50%));transition:filter .4s}
-.grade-view .sec{-webkit-mask-size:cover;mask-size:cover;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
-.grade-view::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(90deg,rgba(14,15,17,.85) 0%,rgba(14,15,17,.4) 40%,rgba(14,15,17,0) 70%)}
-.split-line{position:absolute;top:0;bottom:0;left:var(--split,50%);width:2px;margin-left:-1px;background:#fff;z-index:2;cursor:ew-resize}
-.split-line span{position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:#fff;color:#111;
-  display:grid;place-items:center;box-shadow:0 6px 30px rgba(0,0,0,.4)}
-.split-tag{position:absolute;top:96px;z-index:2;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:6px 10px;border-radius:7px;background:rgba(0,0,0,.55)}
-.split-tag.l{left:calc(var(--split,50%) - 110px)}.split-tag.r{left:calc(var(--split,50%) + 14px)}
-.sliders{display:grid;gap:14px}
-.sl{display:grid;grid-template-columns:96px 1fr 44px;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.06em}
-.sl output{text-align:right;color:var(--ink)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.18);outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ink);border:3px solid var(--amber);cursor:pointer}
-input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--ink);border:3px solid var(--amber);cursor:pointer}
-
-@media (max-width:900px){
-  .grade-view::after{background:linear-gradient(180deg,rgba(14,15,17,0) 20%,rgba(14,15,17,.75) 45%,rgba(14,15,17,.95) 100%)}
-  .split-line span{top:24%}
-}
-
-/* widget: chip buttons */
-.luts{display:flex;flex-wrap:wrap;gap:8px}
-.lut{padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:14px;font-weight:600;background:rgba(255,255,255,.04);transition:background .2s,color .2s,border-color .2s}
-.lut:hover{background:rgba(255,255,255,.1)}
-.lut.on{background:var(--ink);color:#111;border-color:var(--ink)}
-.lut-file{margin-top:16px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px dashed rgba(255,255,255,.25);border-radius:12px;font-family:var(--mono);font-size:12px;color:var(--mute)}
-.lut-file svg{width:22px;height:22px;flex:none}
-
-/* ---------- showcase (finished exports) ---------- */
-.showcase{position:relative;height:450vh}
-.show-stick{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;align-items:flex-end}
-.show-stick video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}
-.show-stick::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,15,17,.6) 0%,rgba(14,15,17,0) 25%,rgba(14,15,17,0) 55%,rgba(14,15,17,.9) 100%);pointer-events:none}
-.show-copy{position:relative;z-index:1;padding-bottom:clamp(28px,7vh,72px);display:flex;justify-content:space-between;align-items:end;gap:28px;flex-wrap:wrap}
-.show-meta{display:flex;flex-direction:column;gap:10px;align-items:flex-end}
-.chip{font-family:var(--mono);font-size:12px;letter-spacing:.06em;padding:8px 12px;border-radius:9px;background:rgba(14,15,17,.6);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.chip b{color:var(--amber);font-weight:500}
-.show-count{position:absolute;z-index:1;top:88px;left:var(--gut);display:flex;gap:8px}
-.show-count i{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}
-.show-count i b{display:block;height:100%;background:#fff;width:0}
-.show-title{margin-top:18px;font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#d6d4cd}
-@media (max-width:700px){.show-meta{align-items:flex-start}}
-
-/* ---------- workflow ---------- */
-.flow{position:relative;overflow:hidden;padding:clamp(110px,18vh,200px) 0}
-.flow .bg{--shade:radial-gradient(circle at 70% 40%,rgba(14,15,17,.35),rgba(14,15,17,.9) 60%)}
-.flow .wrap{position:relative;z-index:1}
-.flow h2{margin-bottom:56px;max-width:11ch}
-.flow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.flow-item{padding:28px}
-.flow-item .n{font-family:var(--mono);color:var(--amber);font-size:13px;margin-bottom:56px;display:block}
-.flow-item h3{font-weight:800;font-size:clamp(26px,2.6vw,38px);letter-spacing:-.045em;margin-bottom:12px}
-.flow-item p{color:#cfcdc6;line-height:1.55}
-@media (max-width:800px){.flow-grid{grid-template-columns:1fr}.flow-item .n{margin-bottom:24px}}
-
-/* ---------- drift wall ---------- */
-.wall-sec{position:relative;padding-top:clamp(90px,14vh,150px);overflow:hidden;background:var(--bg)}
-.wall-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:8px;position:relative;z-index:3}
-.wall-head p{max-width:40ch;color:var(--mute);line-height:1.55}
-.drift{position:relative;height:min(88vh,820px);perspective:1200px;overflow:hidden;touch-action:pan-y}
-.drift::before,.drift::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none}
-.drift::before{background:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,0) 22%,rgba(14,15,17,0) 78%,var(--bg) 100%)}
-.drift::after{background:linear-gradient(90deg,var(--bg) 0%,rgba(14,15,17,0) 14%,rgba(14,15,17,0) 86%,var(--bg) 100%)}
-.drift-plane{position:absolute;left:50%;top:50%;display:flex;gap:var(--dgap);transform-style:preserve-3d;will-change:transform}
-.dcol{display:flex;flex-direction:column;gap:var(--dgap);transform-style:preserve-3d;will-change:transform}
-.dtile{position:relative;flex:none;width:var(--dw);height:var(--dh);border-radius:14px;overflow:hidden;background:var(--panel);cursor:pointer;
-  opacity:.55;transform:translateZ(0);transition:transform .45s cubic-bezier(.2,.7,.2,1),opacity .35s,box-shadow .45s;border:0;padding:0;display:block}
-.dtile img,.dtile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.dtile::after{content:"";position:absolute;inset:0;background:rgba(14,15,17,.35);transition:opacity .35s}
-.dtile:hover,.dtile:focus-visible{opacity:1;transform:translateZ(64px);box-shadow:0 30px 60px -20px rgba(0,0,0,.8);outline:none}
-.dtile:hover::after,.dtile:focus-visible::after{opacity:0}
-.dtile .lbl{position:absolute;z-index:1;left:10px;right:10px;bottom:9px;display:flex;justify-content:space-between;align-items:end;gap:8px;
-  font-weight:700;font-size:14px;letter-spacing:-.02em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7);text-align:left}
-.dtile .lbl i{font-style:normal;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.08em;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,.55);flex:none}
-.dtile .lbl i.r{background:var(--amber);color:#111}
-.wall-hint{position:absolute;z-index:3;left:50%;bottom:28px;transform:translateX(-50%);white-space:nowrap}
-
-/* example viewer overlay */
-.lb{position:fixed;inset:0;z-index:80;display:none;overflow-y:auto;align-items:center;justify-content:center;padding:clamp(12px,3vw,40px);
-  background:rgba(8,9,10,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.lb.open{display:flex;animation:lbIn .35s ease both}
-@keyframes lbIn{from{opacity:0}to{opacity:1}}
-.lb-box{width:min(1180px,100%,calc((100svh - 230px) * 16 / 9));min-width:min(100%,520px);max-height:100%;display:flex;flex-direction:column;gap:14px;animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
-.lb-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
-.lb-top h3{font-weight:900;font-size:clamp(26px,3.4vw,44px);letter-spacing:-.045em;line-height:1}
-.lb-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);flex:none;transition:background .2s}
-.lb-btn:hover{background:rgba(255,255,255,.16)}
-.lb-stage{position:relative;aspect-ratio:16/9;flex:none;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--line2)}
-.lb-stage video,.lb-stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.lb-stage canvas{cursor:grab;touch-action:none}
-.lb-stage canvas:active{cursor:grabbing}
-.lb-tag{position:absolute;z-index:2;left:14px;top:14px}
-.seg{position:absolute;z-index:2;right:14px;top:14px;display:flex;padding:4px;border-radius:999px;background:rgba(14,15,17,.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14)}
-.seg button{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;color:#cfcdc6;transition:background .2s,color .2s}
-.seg button.on{background:var(--ink);color:#111}
-.lb-info{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.lb-steps{display:flex;gap:8px;flex-wrap:wrap}
-.lb-steps span{font-family:var(--mono);font-size:12px;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#d6d4cd}
-.lb-steps span b{color:var(--amber);font-weight:500;margin-right:6px}
-.lb-nav{display:flex;gap:8px}
-@media (max-width:700px){.seg button{padding:7px 10px;font-size:12px}.lb-tag{top:auto;bottom:12px;left:12px;font-size:11px}}
+/* ---------- made with cutroom ---------- */
+.reel{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:14px}
+.clip{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:16/9}
+.clip.big{grid-row:1/3;aspect-ratio:auto}
+.clip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.clip figcaption{position:absolute;left:14px;bottom:12px;right:14px;display:flex;justify-content:space-between;align-items:end;gap:8px;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.clip figcaption b{font-size:16px;font-weight:700}
+.clip figcaption span{font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:6px;background:rgba(0,0,0,.55);text-shadow:none}
+@media (max-width:760px){.reel{grid-template-columns:1fr;grid-template-rows:none}.clip.big{grid-row:auto;aspect-ratio:16/9}}
 
 /* ---------- cta ---------- */
-.cta{position:relative;min-height:110svh;display:flex;align-items:flex-end;overflow:hidden}
-.cta .bg{inset:-10% 0;--shade:linear-gradient(180deg,var(--bg) 0%,rgba(14,15,17,.15) 30%,rgba(14,15,17,.3) 60%,rgba(14,15,17,.95) 100%)}
-.cta-in{position:relative;z-index:2;width:100%;padding-bottom:clamp(40px,10vh,110px)}
-.cta h2{font-weight:900;font-size:clamp(56px,13vw,220px);line-height:.82;letter-spacing:-.06em;margin-bottom:36px}
-.cta-row{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap}
-.cta-row p{max-width:40ch;color:#d4d2cb;font-size:18px;line-height:1.5}
+.cta{position:relative;overflow:hidden;padding:clamp(120px,22vh,220px) 0 clamp(80px,12vh,120px);text-align:center}
+.cta img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}
+.cta::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--bg),rgba(15,15,17,.4) 40%,var(--bg))}
+.cta .wrap{position:relative;z-index:1}
+.cta h2{font-size:clamp(48px,9vw,128px);font-weight:900}
+.cta p{color:#cfcfd2;font-size:18px;margin:20px auto 30px;max-width:40ch;line-height:1.5}
+footer{border-top:1px solid var(--line);padding:26px 0 36px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+footer .brand{font-size:16px}footer .brand img{width:22px;height:22px}
 
-footer{border-top:1px solid var(--line);padding:28px 0 40px}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
-footer .brand{font-size:16px}
-footer .brand img{width:24px;height:24px}
-
-.rv{opacity:0;transform:translateY(40px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
+/* reveal: opacity + transform only */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
 .rv.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
   .rv{opacity:1;transform:none;transition:none}
-  .ticker-track,.drag-hint svg,.hero video,.hero h1 span,.hero-side,.stitch .lenses,.stitch .scan,.st-tag{animation:none}
-  .stitch .lenses,.stitch .scan{display:none}
+  .hero-copy > *{animation:none}
+  .mac-tilt{transform:none}
 }
 </style>
 </head>
@@ -397,1011 +253,472 @@ footer .brand img{width:24px;height:24px}
 <nav class="nav" id="nav">
   <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Cutroom</a>
   <ul>
-    <li><a href="#open">Features</a></li>
-    <li><a href="#stab">Stabilization</a></li>
-    <li><a href="#grade">Colour</a></li>
-    <li><a href="#made">Made with Cutroom</a></li>
-    <li><a href="#examples">Examples</a></li>
+    <li><a href="#all">Apply to all</a></li>
+    <li><a href="#presets">Presets</a></li>
+    <li><a href="#nodes">Node grading</a></li>
+    <li><a href="#quicklook">Quick Look</a></li>
+    <li><a href="#made">Examples</a></li>
   </ul>
-  <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
+  <a href="#get" class="btn">Get Cutroom</a>
 </nav>
 
 <header class="hero" id="top">
-  <video id="heroVid" muted loop playsinline autoplay preload="auto" poster="assets/video/hero.jpg" aria-label="POV kayaking video on the Lower Rauma, Norway"></video>
-  <div class="hud mono">
-    <div>Clip <b>GS010435</b></div>
-    <div>River <b>Lower Rauma</b></div>
-    <div>Quality <b id="hudQ">4K</b></div>
-  </div>
-  <div class="hero-copy">
-    <h1><span>Shoot it all.</span><span class="o">Cut it later.</span></h1>
-    <div class="hero-side">
-      <p>The 360° video editor for Mac. Open GoPro MAX .360 files directly, aim the shot after you film, then grade and export it in any shape.</p>
-      <div class="row">
-        <a href="#get" class="btn"><span class="dot"></span>Get Cutroom</a>
-        <a href="#open" class="btn ghost">See how it works</a>
-      </div>
+  <div class="wrap hero-copy">
+    <span class="eyebrow">360° video editor for Mac</span>
+    <h1>Edit a whole day of 360 footage. <span>All at once.</span></h1>
+    <p>Grade, frame and render every clip from the river in one go. Save it as a preset and use it again on the next trip.</p>
+    <div class="row">
+      <a href="#get" class="btn">Get Cutroom</a>
+      <a href="#all" class="btn ghost">See how it works</a>
     </div>
   </div>
+  <div class="mac" id="mac">
+    <div class="mac-tilt">
+      <div class="mac-lid">
+        <div class="mac-screen">
+          <img src="assets/v2/app-camera.webp" width="1440" height="811" alt="Cutroom on a Mac, framing a GoPro MAX .360 clip of a kayaker on a river" fetchpriority="high">
+          <video class="mac-vid" id="heroVid" src="assets/v2/hero.mp4" poster="assets/v2/hero.webp" muted loop playsinline autoplay preload="auto" aria-hidden="true"></video>
+        </div>
+      </div>
+      <div class="mac-base"></div>
+    </div>
+  </div>
+  <div class="hero-chips wrap"><span>GoPro MAX &amp; MAX 2 .360</span><span>Apply to all clips</span><span>Node grading</span><span>.cube LUTs</span><span>Quick Look for .360</span></div>
 </header>
 
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-track">
-    <span>Opens .360 directly</span><span>Aim after you shoot</span><span>Gyro stabilization</span><span>Colour grading</span><span>.cube LUTs</span><span>True 10-bit</span><span>16:9 · 9:16 · 1:1 · 4:5 · 21:9</span>
-    <span>Opens .360 directly</span><span>Aim after you shoot</span><span>Gyro stabilization</span><span>Colour grading</span><span>.cube LUTs</span><span>True 10-bit</span><span>16:9 · 9:16 · 1:1 · 4:5 · 21:9</span>
-  </div>
-</div>
-
-<section class="statement" id="why">
-  <div class="bg"><img src="assets/img/gorge-cave.webp" alt="" loading="lazy"></div>
+<!-- 01 · apply to all, render all -->
+<section class="sec" id="all">
   <div class="wrap">
-    <span class="kicker">Why 360</span>
-    <p id="statement">On the river you don't get a second take. So stop aiming the camera — <span class="hl">record every direction</span> and pick the shot in Cutroom.</p>
+    <div class="sec-head rv">
+      <span class="kicker">01 <b>/</b> Apply to all · Render all</span>
+      <h2>Grade one clip. Apply it to all of them.</h2>
+      <p class="lede">Get one clip looking right, then send its colour grade and camera settings to every clip in the project, or just the ones you've ticked. Then Export all renders every clip at once.</p>
+    </div>
+    <div class="win rv" id="galWin">
+      <div class="win-bar"><i></i><i></i><i></i><span class="t">Cutroom — River day</span></div>
+      <div class="gal-bar">
+        <span class="lbl" id="galCount">11 clips</span>
+        <span class="preset"><span class="tag cam">YouTube 16:9</span><span class="tag col">YouTube 1</span></span>
+        <button class="ui-btn" id="galApply">Apply to all 11 clips</button>
+        <button class="ui-btn pri" id="galExport">Export all clips</button>
+      </div>
+      <div class="gal" id="gal"></div>
+      <div class="gal-foot"><span id="galState">Ready</span><span>1080p · Maximum · <b id="galDone">0 / 11</b> exported</span></div>
+    </div>
+    <div class="steps3 rv">
+      <div><b>01</b><p>Grade and frame one clip until it looks right.</p></div>
+      <div><b>02</b><p>Apply to all clips, or tick a few and apply to selected.</p></div>
+      <div><b>03</b><p>Export all. Every clip renders at once, each as its own MP4.</p></div>
+    </div>
   </div>
 </section>
 
-<!-- 01 · easy 360 editing -->
-<!-- 01 · opens .360 files -->
-<section class="panel solo" id="open">
-  <div class="bg"><img src="assets/img/norway-tier.webp" alt="" loading="lazy"></div>
-  <div class="inner wrap">
-    <div>
-      <span class="kicker">01 — Opens .360 files directly</span>
-      <h2 class="big">Drop in the .360.<br>Start editing.</h2>
-      <p class="lede">Bring your GoPro MAX or MAX 2 .360 files straight in. No converting in GoPro Player first. Cutroom stitches both lenses live on your Mac's graphics chip.</p>
+<!-- 02 · presets -->
+<section class="sec" id="presets">
+  <div class="wrap split">
+    <div class="rv">
+      <span class="kicker">02 <b>/</b> Presets</span>
+      <h2>Save your settings. Use them whenever.</h2>
+      <p class="lede">Save a camera setup or a grade as a preset: aspect ratio, field of view, lens, stabilization, camera angle, every colour node. Next trip, apply it to the new card in one click. Try it: pick a preset, or save your own.</p>
     </div>
-    <div class="glass">
-      <div class="w-head"><b>GS010564.360</b><span class="mono">Live stitch</span></div>
-      <div class="w-body">
-        <div class="stitch">
-          <img src="assets/demo/stitched.webp" alt="The stitched 360° panorama of a kayaker in a gorge" loading="lazy">
-          <img class="lenses" src="assets/demo/lenses.webp" alt="The two raw lens tracks as stored inside the .360 file" loading="lazy">
-          <i class="scan"></i>
-          <span class="st-tag">RAW .360 · 2 LENS TRACKS</span>
+    <div class="win rv">
+      <div class="pv"><div class="pv-frame" id="pvFrame"><img id="pvImg" src="assets/v2/hero.webp" alt="Preview of the selected preset on a river clip" loading="lazy"></div>
+        <div class="pv-hud"><span id="pvAspect">16:9</span><span id="pvFov">FOV 135°</span><span id="pvCol">YouTube 1</span></div></div>
+      <div class="pp">
+        <h4>CAMERA PRESETS</h4>
+        <div class="pcards" id="camPresets"></div>
+        <div class="checks"><span class="lbl" style="width:100%">Use this clip's settings</span>
+          <label><input type="checkbox" checked>Aspect ratio</label><label><input type="checkbox" checked>FOV</label><label><input type="checkbox" checked>Lens</label><label><input type="checkbox" checked>Stabilization</label><label><input type="checkbox">Camera angle</label>
         </div>
-        <div class="chips-row"><span>GoPro MAX</span><span>GoPro MAX 2</span><span>No GoPro Player</span><span>Stitched on the GPU</span></div>
-      </div>
-    </div>
-  </div>
-  <span class="num">01 / 06</span>
-</section>
-
-<section class="reframe" id="edit">
-  <div class="reframe-stick">
-    <div class="bg"><img src="assets/img/riverbank.webp" alt="" loading="lazy"></div>
-    <div class="reframe-grid">
-      <div class="steps">
-        <div class="step on">
-          <span class="kicker">02 — Point the camera after you shoot</span>
-          <h2>Aim the shot after you film it.</h2>
-          <p>Drag to look around and scroll to zoom. The minimap shows the whole sphere, so one click aims your shot anywhere. Try it on the clip.</p>
-        </div>
-        <div class="step">
-          <span class="kicker">02 — Point the camera after you shoot</span>
-          <h2>Animate it with keyframes.</h2>
-          <p>Set a few keyframes and Cutroom eases the pans and zooms between them. Smooth camera moves from one helmet cam.</p>
-        </div>
-        <div class="step">
-          <span class="kicker">02 — Point the camera after you shoot</span>
-          <h2>Go wide for a tiny planet.</h2>
-          <p>Pull the field of view all the way out and the river wraps into a little planet. It's just another keyframe.</p>
-        </div>
-        <div class="progress-dots"><i class="on"></i><i></i><i></i></div>
-      </div>
-
-      <div class="editor">
-        <div class="ed-bar"><i></i><i></i><i></i><span class="mono">GS010555.360 — Cutroom</span></div>
-        <div class="ed-view">
-          <canvas id="edGL" aria-label="Interactive 360° clip. Drag to look around."></canvas>
-          <div class="drag-hint mono" id="dragHint">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
-            Drag to look around
-          </div>
-          <div class="ed-safe" id="edSafe"></div>
-          <div class="minimap" id="minimap" title="Click to aim the camera"><img src="assets/360/drop.jpg" alt="Minimap of the whole 360° sphere"><i id="mmBox"></i></div>
-          <div class="ed-tag" id="edTag">VIEW · Rectilinear</div>
-        </div>
-        <div class="ed-time">
-          <div class="ed-params">
-            <span>YAW <b id="pYaw">0°</b></span><span>PITCH <b id="pPitch">0°</b></span><span>FOV <b id="pFov">90°</b></span><span>PROJ <b id="pProj">Flat</b></span><span>TC <b id="pTc">00:00:00</b></span>
-          </div>
-          <div class="timeline">
-            <div class="track video"></div>
-            <div class="track cam" id="camTrack"><div class="line"></div></div>
-            <div class="track audio"></div>
-            <div class="playhead" id="playhead"></div>
-          </div>
-        </div>
+        <h4>COLOUR PRESETS</h4>
+        <div class="pcards" id="colPresets"></div>
+        <div class="save-row" style="margin-top:12px"><input id="saveName" placeholder="Preset name, e.g. Norway trip" maxlength="24" aria-label="New preset name"><button class="ui-btn pri" id="saveBtn">Save preset</button></div>
+        <div class="applied" id="applied"></div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="stack" id="stack">
-  <!-- 03 · stabilization -->
-  <section class="panel" id="stab">
-    <div class="bg"><video class="bgvid stab-vid" id="stabVid" data-src="assets/video/canyon_bg.mp4" poster="assets/video/canyon_bg.jpg" muted loop playsinline preload="none"></video></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">03 — Stabilization</span>
-        <h2 class="big">Steady when it gets rough.</h2>
-        <p class="lede">Cutroom uses the camera's own motion and gravity sensors, so it holds steady through spray, whitewater and hard hits where picture-based stabilization loses track. Keep the horizon level automatically, or lock the view completely.</p>
+<!-- 03 · node tree -->
+<section class="sec" id="nodes">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">03 <b>/</b> Node grading</span>
+      <h2>LUTs, grades and colour spaces. In a node tree.</h2>
+      <p class="lede">The picture flows left to right through each node. Convert the camera's colour space, drop in your .cube LUTs, add a grade, then fix just the water with a secondary. Switch nodes off to compare, and save the whole tree as a preset.</p>
+    </div>
+    <div class="win rv">
+      <div class="nt-view" id="ntView">
+        <img id="ntRaw" src="assets/v2/grade-still.webp" alt="" loading="lazy">
+        <div class="graded" id="ntGraded">
+          <img id="ntImg" src="assets/v2/grade-still.webp" alt="Kayaker boofing a ledge in turquoise water, graded through the node tree" loading="lazy">
+          <img class="sec-layer" id="ntSec" src="assets/v2/grade-still.webp" alt="" loading="lazy">
+        </div>
+        <span class="nt-tag" id="ntTag">2 nodes · graded</span>
+        <div class="seg" id="ntSeg"><button class="on" data-m="g">Graded</button><button data-m="u">Ungraded</button><button data-m="b">Before / after</button></div>
+        <div class="ba" id="ntBa" hidden><span><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
       </div>
-      <div class="glass">
-        <div class="w-head"><b>Stabilization</b><span class="mono">Gyro + gravity</span></div>
-        <div class="w-body">
-          <div class="seg-row" id="stabSeg"><button data-m="off">Off</button><button data-m="level" class="on">Level horizon</button><button data-m="lock">Locked</button></div>
-          <canvas class="gyro" id="gyro" aria-label="Live camera motion sensor readout"></canvas>
-          <div class="gyro-key"><span><i style="background:#e8705a"></i>Roll</span><span><i style="background:var(--teal)"></i>Pitch</span><span><i style="background:var(--violet)"></i>Yaw</span><b id="stabOut">Horizon 0.0°</b></div>
+      <div class="nt-strip">
+        <div class="nt-top">
+          <span class="lbl">Nodes</span><p>The picture flows left to right through each node</p>
+          <button class="ui-btn nt-add" data-add="cs">+ Colour space</button>
+          <button class="ui-btn nt-add" data-add="sec">+ Secondary</button>
+          <button class="ui-btn nt-add" data-add="lut">+ LUT</button>
+          <button class="ui-btn nt-add" data-add="grade">+ Grade</button>
+        </div>
+        <div class="flow" id="flow"></div>
+        <p class="nt-hint">Click a node to switch it off and on. Hover to remove it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 · quick look -->
+<section class="sec" id="quicklook">
+  <div class="wrap split">
+    <div class="rv">
+      <span class="kicker">04 <b>/</b> Quick Look</span>
+      <h2>Press Space. Watch the .360.</h2>
+      <p class="lede">Finder can't preview GoPro .360 files on its own. With Cutroom installed, select one and press Space to watch it, stitched, without opening anything.</p>
+      <div class="space-key"><kbd id="spaceKey" role="button" tabindex="0" aria-label="Press Space to Quick Look the selected file">space</kbd><span>Try it, or use the arrow keys</span></div>
+    </div>
+    <div class="win rv">
+      <div class="win-bar"><i></i><i></i><i></i><span class="t">GoPro MAX · River day</span></div>
+      <div class="finder" id="finder">
+        <div class="f-side"><b>Favourites</b><span>Desktop</span><span>Documents</span><span>Downloads</span><b>Locations</b><span class="on">GoPro MAX</span><span>Macintosh HD</span></div>
+        <div class="f-grid" id="fgrid"></div>
+        <div class="ql" id="ql" role="dialog" aria-label="Quick Look preview">
+          <div class="ql-bar"><b id="qlName">GS010419.360</b><span class="ui-btn" style="padding:4px 9px;font-size:12px">Open with Cutroom</span></div>
+          <video id="qlVid" muted loop playsinline preload="none" poster="assets/v2/quicklook.webp"></video>
+          <div class="ql-foot">5.6K .360 · GoPro MAX · stitched preview</div>
         </div>
       </div>
     </div>
-    <span class="num">03 / 06</span>
-  </section>
+  </div>
+</section>
 
-  <!-- 04 · colour grading -->
-  <section class="panel" id="grade">
-    <div class="grade-view" id="gradeView">
-      <img class="raw" src="assets/img/soca-boof.webp" alt="" loading="lazy">
-      <div class="graded" id="gradedWrap">
-        <img id="gradedImg" src="assets/img/soca-boof.webp" alt="Kayaker in a pink boat boofing between white limestone rocks" loading="lazy">
-        <img class="sec" id="secWater" src="assets/img/soca-boof.webp" alt="" loading="lazy" style="-webkit-mask-image:url(assets/demo/mask-water.webp);mask-image:url(assets/demo/mask-water.webp)">
-        <img class="sec" id="secBoat" src="assets/img/soca-boof.webp" alt="" loading="lazy" style="-webkit-mask-image:url(assets/demo/mask-boat.webp);mask-image:url(assets/demo/mask-boat.webp)">
-      </div>
-      <span class="split-tag l">UNGRADED</span><span class="split-tag r">GRADED</span>
-      <div class="split-line" id="splitLine"><span><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
+<!-- everything else -->
+<section class="sec" id="more">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="kicker">And the rest</span>
+      <h2>Everything else a 360 edit needs.</h2>
     </div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">04 — Real colour grading</span>
-        <h2 class="big">Pro grading. No learning curve.</h2>
-        <p class="lede">A node-based grade like the pro tools: brightness, contrast, white balance and saturation. Secondary grading changes just the sky, water or skin in one click. Import your favourite .cube LUTs, or save your own grade as a LUT for Resolve, Premiere or Final Cut.</p>
-      </div>
-      <div class="glass">
-        <div class="w-head"><div class="tabs" id="gTabs"><button class="on" data-t="p">Primary</button><button data-t="s">Secondary</button><button data-t="l">LUTs</button></div><span class="mono">Node 1</span></div>
-        <div class="w-body">
-          <div class="tabp sliders" data-t="p">
-            <label class="sl">BRIGHTNESS<input type="range" id="gExp" min="-50" max="50" value="6"><output>+6</output></label>
-            <label class="sl">CONTRAST<input type="range" id="gCon" min="-50" max="50" value="14"><output>+14</output></label>
-            <label class="sl">WHITE BAL<input type="range" id="gTmp" min="-50" max="50" value="-8"><output>−8</output></label>
-            <label class="sl">SATURATION<input type="range" id="gSat" min="-50" max="50" value="22"><output>+22</output></label>
-          </div>
-          <div class="tabp" data-t="s" hidden>
-            <div class="luts" id="secPick"><button class="lut on" data-k="water">Water</button><button class="lut" data-k="boat">Boat</button></div>
-            <div class="sliders" style="margin-top:14px">
-              <label class="sl">HUE<input type="range" id="sHue" min="-60" max="60" value="0"><output>0</output></label>
-              <label class="sl">SATURATION<input type="range" id="sSat" min="-50" max="50" value="0"><output>0</output></label>
-            </div>
-            <p class="w-note">Only the selected area changes. The rest of the shot stays put.</p>
-          </div>
-          <div class="tabp" data-t="l" hidden>
-            <div class="luts" id="lutList">
-              <button class="lut on" data-f="">None</button>
-              <button class="lut" data-f="saturate(1.35) contrast(1.12) hue-rotate(-6deg)">Glacier</button>
-              <button class="lut" data-f="sepia(.28) saturate(1.45) contrast(1.12) hue-rotate(-12deg)">Teal &amp; Orange</button>
-              <button class="lut" data-f="saturate(.62) contrast(.88) brightness(1.08)">Nordic Fade</button>
-              <button class="lut" data-f="grayscale(1) contrast(1.25) brightness(1.05)">Mono</button>
-            </div>
-            <div class="lut-file">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m0 0-4 4m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg>
-              Import .cube LUTs · export your grade as .cube for Resolve, Premiere or Final Cut
-            </div>
-          </div>
-        </div>
+    <div class="more">
+      <div class="mcard rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><h3>Opens .360 directly</h3><p>GoPro MAX and MAX 2 files go straight in, both lens streams stitched live. No GoPro Player first.</p></div>
+      <div class="mcard rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="11" height="7" rx="1.5"/><rect x="16" y="4" width="5" height="9" rx="1.5"/><rect x="5" y="15" width="6" height="6" rx="1.5"/></svg><h3>Every shape</h3><p>16:9, 9:16, 1:1, 4:5, 4:3 or 21:9, with Linear, Wide or Fisheye lenses and any field of view.</p></div>
+      <div class="mcard rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg><h3>Stabilization</h3><p>Set how much to smooth, and level the horizon with one click, even through whitewater.</p></div>
+      <div class="mcard rv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg><h3>Export up to 4K</h3><p>1080p, 1440p or 4K at Standard, High or Maximum, and it tells you how much detail each one keeps.</p></div>
+      <div class="mcard try rv">
+        <div><span class="kicker">Live 360 preview</span><h3 style="font-size:26px">Drag to look around.</h3><p style="margin-top:8px">This is the same raw .360 clip you'd drop into Cutroom. It only loads when you ask for it.</p></div>
+        <div class="try-view" id="tryView"><button id="tryBtn" aria-label="Load the interactive 360° clip"><span><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>Look around in 360°</span></button></div>
       </div>
     </div>
-    <span class="num">04 / 06</span>
-  </section>
-
-  <!-- 05 · true 10-bit -->
-  <section class="panel" id="tenbit">
-    <div class="bg"><img src="assets/video/hero.jpg" alt="" loading="lazy" style="filter:blur(8px)"></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">05 — True 10-bit</span>
-        <h2 class="big">10-bit in.<br>10-bit out.</h2>
-        <p class="lede">10-bit footage from the GoPro MAX 2 stays 10-bit from the file to the export. Smooth skies and gradients, no banding. Export in HEVC 10-bit or H.264.</p>
-      </div>
-      <div class="glass">
-        <div class="w-head"><b>Graded sky, up close</b><span class="mono">Simulated</span></div>
-        <div class="w-body">
-          <div class="bits" id="bits">
-            <canvas id="bits8" aria-label="Sky after grading in 8-bit, showing banding"></canvas>
-            <canvas id="bits10" class="hi" aria-label="Sky after grading in 10-bit, smooth"></canvas>
-            <span class="split-tag l">8-BIT</span><span class="split-tag r">10-BIT</span>
-            <div class="split-line" id="bitsLine"><span><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 5 2 10l5 5M13 5l5 5-5 5"/></svg></span></div>
-          </div>
-          <div class="chips-row"><span>GoPro MAX 2 · 10-bit</span><span>HEVC 10-bit</span><span>H.264</span></div>
-        </div>
-      </div>
-    </div>
-    <span class="num">05 / 06</span>
-  </section>
-
-  <!-- 06 · any shape -->
-  <section class="panel" id="shape">
-    <div class="bg"><img src="assets/video/export_0564_4k.jpg" alt="" loading="lazy" style="filter:blur(16px) brightness(.7)"></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">06 — Any shape, any platform</span>
-        <h2 class="big">One clip.<br>Every shape.</h2>
-        <p class="lede">16:9 for YouTube, 9:16 for Reels and TikTok, 1:1, 4:5 or 21:9. Up to 4K. Cut one clip into several shots, and each cut exports as its own video.</p>
-      </div>
-      <div class="glass">
-        <div class="w-head"><b>Export</b><span class="mono" id="shapeRes">3840 × 2160</span></div>
-        <div class="w-body">
-          <div class="frame-stage" id="frameStage"><div class="frame" id="frame"><video class="bgvid" id="shapeVid" data-src="assets/video/export_0564_4k.mp4" poster="assets/video/export_0564_4k.jpg" muted loop playsinline preload="none"></video></div></div>
-          <div class="luts ratios" id="ratios">
-            <button class="lut on" data-r="16:9">16:9<small>YouTube</small></button>
-            <button class="lut" data-r="9:16">9:16<small>Reels · TikTok</small></button>
-            <button class="lut" data-r="1:1">1:1</button>
-            <button class="lut" data-r="4:5">4:5</button>
-            <button class="lut" data-r="21:9">21:9</button>
-          </div>
-          <div class="cuts" id="cuts"></div>
-        </div>
-      </div>
-    </div>
-    <span class="num">06 / 06</span>
-  </section>
-
-  <!-- workflow · presets -->
-  <section class="panel" id="presets">
-    <div class="bg"><img src="assets/img/celebrate.webp" alt="" loading="lazy" style="object-position:center 72%"></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">Workflow — Presets</span>
-        <h2 class="big">Save it once.<br>Apply it to everything.</h2>
-        <p class="lede">Dial in the framing, horizon lock, grade and export settings once, then save them as a preset. One click applies it to every clip from the day.</p>
-      </div>
-      <div class="glass" id="presetW">
-        <div class="w-head"><b>Helmet cam · Creek day</b><span class="mono">Preset</span></div>
-        <div class="w-body">
-          <div class="preset-props">
-            <div>Output<b>16:9 · 4K</b></div>
-            <div>Field of view<b>142°</b></div>
-            <div>Horizon<b>Locked</b></div>
-            <div>LUT<b>Glacier</b></div>
-          </div>
-          <div class="clips" id="clips"></div>
-          <button class="btn apply" id="applyBtn"><span class="dot"></span><span id="applyTxt">Apply to 12 clips</span></button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- workflow · batch render -->
-  <section class="panel" id="render">
-    <div class="bg"><img src="assets/video/export_0555_hq.jpg" alt="" loading="lazy"></div>
-    <div class="inner wrap">
-      <div>
-        <span class="kicker">Workflow — Batch render</span>
-        <h2 class="big">Render every clip at once.</h2>
-        <p class="lede">Queue the whole card and Cutroom renders all your clips at the same time. Start it, grab a coffee, and the edit's done when you get back.</p>
-      </div>
-      <div class="glass" id="renderW">
-        <div class="w-head"><b>Render queue</b><span class="mono" id="rqState">Rendering</span></div>
-        <div class="w-body">
-          <div id="jobs"></div>
-          <div class="render-foot"><span>All clips · in parallel</span><span>Done <b id="rqDone">0/5</b></span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</div>
+  </div>
+</section>
 
 <!-- made with cutroom -->
-<section class="showcase" id="made">
-  <div class="show-stick">
-    <video data-src="assets/video/export_0564_4k.mp4" data-sm="assets/video/export_0564.mp4" poster="assets/video/export_0564_4k.jpg" data-title="The gorge" data-in="GS010564.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/waterfall_drop.mp4" poster="assets/video/waterfall_drop.jpg" data-title="The waterfall" data-in="GS010038" data-out="16:9 · 4K" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/alps.mp4" poster="assets/video/alps.jpg" data-title="King of the Alps" data-in="GS010348.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
-    <video data-src="assets/video/export_0555_hq.mp4" poster="assets/video/export_0555_hq.jpg" data-title="The drop" data-in="GS010555.360" data-out="16:9 · 4K · 142° FOV" muted loop playsinline preload="none"></video>
-    <div class="show-count" id="showCount"></div>
-    <div class="show-copy wrap">
-      <div>
-        <span class="kicker">Made with Cutroom</span>
-        <h2 class="big">Straight out<br>of Cutroom.</h2>
-        <p class="show-title" id="showTitle">The gorge</p>
-      </div>
-      <div class="show-meta">
-        <span class="chip">IN <b id="showIn">GS010564.360</b></span>
-        <span class="chip">OUT <b id="showOut">16:9 · 4K · 142° FOV</b></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="flow" id="workflow">
-  <div class="bg"><video class="bgvid" data-src="assets/video/alps_bg.mp4" poster="assets/video/alps_bg.jpg" muted loop playsinline preload="none"></video></div>
+<section class="sec" id="made">
   <div class="wrap">
-    <span class="kicker">Workflow</span>
-    <h2 class="big rv">Card to cut in three moves.</h2>
-    <div class="flow-grid">
-      <div class="flow-item glass rv"><span class="n">01 / Import</span><h3>Drop the .360s</h3><p>Straight off the card, no GoPro Player. Cutroom stitches every clip live so you can start right away.</p></div>
-      <div class="flow-item glass rv"><span class="n">02 / Direct</span><h3>Aim, steady, grade</h3><p>Point the camera, lock the horizon and grade one clip. Save it as a preset and apply it to the rest.</p></div>
-      <div class="flow-item glass rv"><span class="n">03 / Export</span><h3>Every shape at once</h3><p>16:9, 9:16 and more, up to 4K in 10-bit. Every cut renders as its own video, all at the same time.</p></div>
+    <div class="sec-head rv">
+      <span class="kicker">Made with Cutroom</span>
+      <h2>Straight out of Cutroom.</h2>
     </div>
-  </div>
-</section>
-
-<section class="wall-sec" id="examples">
-  <div class="wall-head wrap">
-    <div>
-      <span class="kicker">Examples</span>
-      <h2 class="big rv">Pick a clip.<br>See the cut.</h2>
+    <div class="reel">
+      <figure class="clip big rv"><video data-src="assets/v2/made-gorge.mp4" poster="assets/v2/made-gorge.webp" muted loop playsinline preload="none"></video><figcaption><b>The gorge</b><span>GS010564.360 → 16:9 4K</span></figcaption></figure>
+      <figure class="clip rv"><video data-src="assets/v2/made-alps.mp4" poster="assets/v2/made-alps.webp" muted loop playsinline preload="none"></video><figcaption><b>King of the Alps</b><span>GS010348.360</span></figcaption></figure>
+      <figure class="clip rv"><video data-src="assets/v2/made-canyon.mp4" poster="assets/v2/made-canyon.webp" muted loop playsinline preload="none"></video><figcaption><b>The canyon</b><span>GS010583</span></figcaption></figure>
     </div>
-    <p class="rv">Every tile is real footage from the river. Hover to preview, click to see what Cutroom made from it. Clips marked 360° let you flip back to the raw sphere and look around.</p>
-  </div>
-  <div class="drift" id="drift" aria-label="Wall of example clips">
-    <div class="drift-plane" id="driftPlane"></div>
-    <span class="wall-hint mono">Click any clip</span>
   </div>
 </section>
 
 <section class="cta" id="get">
-  <div class="bg" id="ctaBg"><img src="assets/img/waterfall.webp" alt="" loading="lazy"></div>
-  <div class="cta-in wrap">
-    <h2 class="rv">Go film<br>everything.</h2>
-    <div class="cta-row">
-      <p class="rv">Cutroom is coming soon. Get early access and be first in line when it launches.</p>
-      <a href="mailto:hello@example.com?subject=Cutroom%20early%20access" class="btn rv"><span class="dot"></span>Get early access</a>
-    </div>
+  <img src="assets/img/waterfall.webp" alt="" loading="lazy">
+  <div class="wrap">
+    <h2 class="rv">Go film everything.</h2>
+    <p class="rv">Cutroom is coming soon for Mac. Get early access and be first in line.</p>
+    <a href="mailto:hello@example.com?subject=Cutroom%20early%20access" class="btn rv">Get early access</a>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
     <a href="#top" class="brand"><img src="assets/icon.svg" alt="">Cutroom</a>
-    <span class="mono">© 2026 Cutroom · 360° video, cut properly</span>
+    <span>© 2026 Cutroom · 360° video editor for Mac</span>
   </div>
 </footer>
 
-<div class="lb" id="lb" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
-  <div class="lb-box">
-    <div class="lb-top">
-      <div><span class="kicker" id="lbFile" style="margin-bottom:8px">GS010564.360</span><h3 id="lbTitle">The gorge</h3></div>
-      <button class="lb-btn" id="lbClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l12 12M15 3 3 15"/></svg></button>
-    </div>
-    <div class="lb-stage">
-      <video id="lbVid" muted loop playsinline></video>
-      <canvas id="lbGL" hidden aria-label="Raw 360° clip. Drag to look around."></canvas>
-      <span class="chip lb-tag" id="lbTag">OUT <b>16:9 · 4K · 142° FOV</b></span>
-      <div class="seg" id="lbSeg"><button class="on" data-m="out">Cutroom export</button><button data-m="raw">Raw 360°</button></div>
-      <div class="drag-hint mono" id="lbHint" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/><circle cx="12" cy="12" r="2.2"/></svg>
-        Drag to look around
-      </div>
-    </div>
-    <div class="lb-info">
-      <div class="lb-steps" id="lbSteps"></div>
-      <div class="lb-nav">
-        <button class="lb-btn" id="lbPrev" aria-label="Previous clip"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3 5 9l6 6"/></svg></button>
-        <button class="lb-btn" id="lbNext" aria-label="Next clip"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 3 6 6-6 6"/></svg></button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 (() => {
+const $ = id => document.getElementById(id);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-const deg = r => Math.round(r * 180 / Math.PI);
-const $ = id => document.getElementById(id);
 const inView = (el, cb, margin = '0px') => new IntersectionObserver(([e]) => cb(e.isIntersecting), { rootMargin: margin }).observe(el);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* ---------- 360 renderer: equirectangular source, rectilinear → stereographic ---------- */
-const VS = `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`;
-const FS = `precision highp float;
-uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,scale,dist;
-void main(){
-  vec2 p=gl_FragCoord.xy/res*2.-1.;p.x*=res.x/res.y;p*=scale;
-  vec3 D=normalize(vec3(p,-1.));vec3 O=vec3(0.,0.,dist);
-  float b=dot(O,D),c=dot(O,O)-1.;
-  vec3 q=O+(-b+sqrt(max(b*b-c,0.)))*D;
-  float cp=cos(pitch),sp=sin(pitch);q=vec3(q.x,q.y*cp-q.z*sp,q.y*sp+q.z*cp);
-  float cy=cos(yaw),sy=sin(yaw);q=vec3(q.x*cy+q.z*sy,q.y,-q.x*sy+q.z*cy);
-  vec2 uv=vec2(.5+atan(q.x,-q.z)/6.2831853,.5-asin(clamp(q.y,-1.,1.))/3.1415927);
-  gl_FragColor=texture2D(tex,uv);
-}`;
-
-// 4K source on large screens that can hold a 4K texture; 2K elsewhere
-const probe = document.createElement('canvas').getContext('webgl');
-const big = innerWidth >= 900 && !(navigator.connection && navigator.connection.saveData)
-  && probe && probe.getParameter(probe.MAX_TEXTURE_SIZE) >= 4096;
-const clip = name => `assets/360/${name}${big ? '_4k' : ''}.mp4`;
-
-function Sphere(canvas, src, poster) {
-  const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false });
-  const view = { yaw: 0, pitch: 0, scale: .9, dist: 0 };
-  if (!gl) { canvas.style.background = `url(${poster}) center/cover`; return { view }; }
-  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
-  const pr = gl.createProgram();
-  gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS));
-  gl.linkProgram(pr); gl.useProgram(pr);
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const U = n => gl.getUniformLocation(pr, n);
-  const u = { res: U('res'), yaw: U('yaw'), pitch: U('pitch'), scale: U('scale'), dist: U('dist') };
-  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([20, 21, 24, 255]));
-  for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]])
-    gl.texParameteri(gl.TEXTURE_2D, k, v);
-
-  let videoReady = false, active = false;
-  const img = new Image();
-  img.onload = () => { if (!videoReady) { gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); } };
-  img.src = poster;
-
-  const video = document.createElement('video');
-  Object.assign(video, { src, muted: true, loop: true, playsInline: true, preload: 'auto' });
-  video.setAttribute('playsinline', ''); video.setAttribute('muted', '');
-  video.addEventListener('playing', () => videoReady = true);
-
-  function resize() {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
-    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-  }
-  function draw() {
-    if (active) requestAnimationFrame(draw);
-    resize();
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    if (videoReady && video.readyState >= 2) {
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-    }
-    gl.uniform2f(u.res, canvas.width, canvas.height);
-    gl.uniform1f(u.yaw, view.yaw); gl.uniform1f(u.pitch, view.pitch);
-    gl.uniform1f(u.scale, view.scale); gl.uniform1f(u.dist, view.dist);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    api.onFrame && api.onFrame(video);
-  }
-  const api = {
-    view, video,
-    setSrc(next, nextPoster) {
-      videoReady = false; video.src = next; img.src = nextPoster;
-      if (active) video.play().catch(() => {});
-    }
-  };
-  // only visible players decode
-  inView(canvas, on => {
-    if (on === active) return;
-    active = on;
-    if (on) { video.play().catch(() => {}); requestAnimationFrame(draw); } else video.pause();
-  }, '100px');
-  return api;
+/* ---------- reveals and nav ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+const nav = $('nav'), mac = $('mac');
+let ticking = false;
+function onScroll() {
+  ticking = false;
+  nav.classList.toggle('solid', scrollY > 40);
+  // the laptop lid opens flat as the hero scrolls up
+  const r = mac.getBoundingClientRect();
+  mac.style.setProperty('--tilt', clamp((r.top - innerHeight * .25) / (innerHeight * .6), 0, 1).toFixed(3));
 }
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+onScroll();
 
-/* ---------- hero: sharpest flat clip the screen can use ---------- */
-const heroVid = $('heroVid'), px = Math.max(screen.width, innerWidth) * (devicePixelRatio || 1);
-const slow = navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''));
-const heroRes = slow ? '1080' : px >= 2400 ? '4k' : px >= 1300 ? '1440' : '1080';
-heroVid.src = `assets/video/hero_${heroRes}.mp4`;
-$('hudQ').textContent = { '4k': '4K', '1440': '1440p', '1080': '1080p' }[heroRes];
-if (reduced) heroVid.removeAttribute('autoplay'); else heroVid.play().catch(() => {});
+/* ---------- videos: load near the viewport, play only while visible ---------- */
+const heroVid = $('heroVid');
 inView(heroVid, on => on && !reduced ? heroVid.play().catch(() => {}) : heroVid.pause());
-
-/* ---------- 01 editor: scroll-driven camera ---------- */
-const E = Sphere($('edGL'), clip('drop'), 'assets/360/drop.jpg');
-const edView = $('edGL').parentElement;
-let edDrag = null, offYaw = 0, offPitch = 0, offZoom = 1;
-edView.addEventListener('pointerdown', e => { edDrag = { x: e.clientX, y: e.clientY }; $('dragHint').classList.add('gone'); edView.setPointerCapture(e.pointerId); });
-edView.addEventListener('pointermove', e => {
-  if (!edDrag) return;
-  const k = 2.2 * E.view.scale / edView.clientHeight;
-  offYaw -= (e.clientX - edDrag.x) * k; offPitch = clamp(offPitch + (e.clientY - edDrag.y) * k, -1.2, 1.2);
-  edDrag = { x: e.clientX, y: e.clientY };
-});
-const edEnd = () => edDrag = null;
-edView.addEventListener('pointerup', edEnd); edView.addEventListener('pointercancel', edEnd);
-// pinch (or ctrl + scroll) zooms the view; plain scrolling keeps scrolling the page
-edView.addEventListener('wheel', e => {
-  if (!e.ctrlKey) return;
-  e.preventDefault();
-  offZoom = clamp(offZoom * Math.exp(e.deltaY * .01), .45, 2.2);
-}, { passive: false });
-// minimap: the whole sphere as an equirectangular strip; click to aim
-const minimap = $('minimap'), mmBox = $('mmBox');
-const wrapPi = a => Math.atan2(Math.sin(a), Math.cos(a));
-minimap.addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  const r = minimap.getBoundingClientRect(), u = (e.clientX - r.left) / r.width, w = (e.clientY - r.top) / r.height;
-  const [y, p] = sampleKF(scrollT), v = E.view;
-  offYaw = v.yaw + wrapPi((.5 - u) * 2 * Math.PI - v.yaw) - y * Math.PI / 180;
-  offPitch = clamp((.5 - w) * Math.PI - p * Math.PI / 180, -1.2, 1.2);
-  $('dragHint').classList.add('gone');
-});
-const reframe = $('edit');
-const steps = [...document.querySelectorAll('.step')], dots = [...document.querySelectorAll('.progress-dots i')];
-// keyframes along scroll progress: [t, yaw°, pitch°, scale, dist]
-const KF = [
-  [0.00,   0,   -8, .62, 0],
-  [0.14,  70,   -4, .70, 0],
-  [0.28, 180,    0, .78, 0],
-  [0.40, 250,  -14, .66, 0],
-  [0.52, 330,  -22, .42, 0],
-  [0.64, 360,   -6, .95, 0],
-  [0.80, 380,  -60, 1.6, .6],
-  [1.00, 400,  -90, 3.6, 1],
-];
-KF.forEach(k => { const d = document.createElement('i'); d.className = 'kf'; d.style.left = (k[0] * 100) + '%'; $('camTrack').appendChild(d); k.el = d; });
-let scrollT = 0;
-function sampleKF(t) {
-  let i = 0; while (i < KF.length - 2 && t > KF[i + 1][0]) i++;
-  const a = KF[i], b = KF[i + 1], f = ease(clamp((t - a[0]) / (b[0] - a[0]), 0, 1));
-  return [1, 2, 3, 4].map(j => lerp(a[j], b[j], f));
-}
-E.onFrame = video => {
-  const [y, p, s, d] = sampleKF(scrollT), v = E.view;
-  v.yaw = lerp(v.yaw, y * Math.PI / 180 + offYaw, .18); v.pitch = lerp(v.pitch, clamp(p * Math.PI / 180 + offPitch, -1.57, 1.57), .18);
-  v.scale = lerp(v.scale, s * offZoom, .18); v.dist = lerp(v.dist, d, .18);
-  const asp = edView.clientWidth / edView.clientHeight;
-  const bw = 2 * Math.atan(v.scale * asp) / (2 * Math.PI), bh = 2 * Math.atan(v.scale) / Math.PI;
-  const u = (((.5 - v.yaw / (2 * Math.PI)) % 1) + 1) % 1, w = .5 - v.pitch / Math.PI;
-  mmBox.style.cssText = `left:${(u - bw / 2) * 100}%;top:${(w - bh / 2) * 100}%;width:${bw * 100}%;height:${bh * 100}%;opacity:${v.dist > .4 ? 0 : 1}`;
-  $('pYaw').textContent = ((deg(v.yaw) % 360) + 360) % 360 + '°';
-  $('pPitch').textContent = deg(v.pitch) + '°';
-  $('pFov').textContent = deg(2 * Math.atan(v.scale)) + '°';
-  $('pProj').textContent = v.dist < .15 ? 'Flat' : v.dist < .8 ? 'Fisheye' : 'Tiny planet';
-  $('edTag').textContent = 'VIEW · ' + (v.dist < .15 ? 'Rectilinear' : v.dist < .8 ? 'Fisheye' : 'Little planet');
-  if (video.duration) {
-    const t = video.currentTime;
-    $('pTc').textContent = `00:${String(Math.floor(t)).padStart(2, '0')}:${String(Math.floor((t % 1) * 30)).padStart(2, '0')}`;
-  }
-};
-function onReframe() {
-  const r = reframe.getBoundingClientRect();
-  scrollT = clamp(-r.top / (r.height - innerHeight), 0, 1);
-  const s = scrollT < .3 ? 0 : scrollT < .64 ? 1 : 2;
-  steps.forEach((el, i) => el.classList.toggle('on', i === s));
-  dots.forEach((el, i) => el.classList.toggle('on', i <= s));
-  KF.forEach(k => k.el.classList.toggle('on', k[0] === 0 || scrollT >= k[0]));
-  $('playhead').style.left = (scrollT * 100) + '%';
-  $('edSafe').style.opacity = scrollT > .7 ? 0 : 1;
-}
-
-/* ---------- statement word reveal ---------- */
-const st = $('statement');
-(function split(node) {
-  [...node.childNodes].forEach(n => {
-    if (n.nodeType === 3) {
-      const frag = document.createDocumentFragment();
-      n.textContent.split(/(\s+)/).forEach(w => {
-        if (!w.trim()) { frag.appendChild(document.createTextNode(w)); return; }
-        const s = document.createElement('span'); s.className = 'w'; s.textContent = w; frag.appendChild(s);
-      });
-      n.replaceWith(frag);
-    } else split(n);
-  });
-})(st);
-const words = [...st.querySelectorAll('.w')], stSec = $('why');
-function onStatement() {
-  const r = st.getBoundingClientRect();
-  const t = clamp((innerHeight * .85 - r.top) / (r.height + innerHeight * .35), 0, 1);
-  const n = Math.round(t * words.length);
-  words.forEach((w, i) => w.classList.toggle('on', i < n));
-  const rs = stSec.getBoundingClientRect();
-  stSec.style.setProperty('--p', clamp(1 - rs.bottom / (rs.height + innerHeight), 0, 1).toFixed(3));
-}
-
-/* ---------- stacked panels: dim + shrink the panel being covered ---------- */
-const panels = [...document.querySelectorAll('.panel')];
-function onPanels() {
-  panels.forEach((p, i) => {
-    const r = p.getBoundingClientRect();
-    p.style.setProperty('--enter', clamp(r.top / innerHeight, 0, 1).toFixed(3));
-    const next = panels[i + 1];
-    const cover = next ? clamp(1 - next.getBoundingClientRect().top / innerHeight, 0, 1) : 0;
-    p.style.setProperty('--cover', cover.toFixed(3));
-  });
-}
-
-/* ---------- 02 presets: apply to every clip ---------- */
-const thumbs = ['riverbank', 'gorge-cave', 'norway-tier', 'soca-boof', 'celebrate', 'waterfall', 'soca-boof', 'riverbank', 'norway-tier', 'celebrate', 'gorge-cave', 'waterfall'];
-const clipsEl = $('clips');
-thumbs.forEach(t => { const c = document.createElement('div'); c.className = 'clip'; c.style.backgroundImage = `url(assets/img/${t}.webp)`; clipsEl.appendChild(c); });
-const clipEls = [...clipsEl.children], applyBtn = $('applyBtn');
-let applied = false;
-function applyPreset() {
-  if (applied) {
-    clipEls.forEach(c => c.classList.remove('done'));
-    $('applyTxt').textContent = 'Apply to 12 clips'; applied = false; return;
-  }
-  applied = true; applyBtn.disabled = true; $('applyTxt').textContent = 'Applying…';
-  clipEls.forEach((c, i) => setTimeout(() => c.classList.add('done'), reduced ? 0 : 60 * i));
-  setTimeout(() => { applyBtn.disabled = false; $('applyTxt').textContent = 'Applied to 12 clips · Reset'; }, reduced ? 0 : 60 * clipEls.length + 200);
-}
-applyBtn.addEventListener('click', applyPreset);
-let autoApplied = false;
-inView($('presetW'), on => { if (on && !autoApplied) { autoApplied = true; setTimeout(() => !applied && applyPreset(), 700); } });
-
-/* ---------- 03 batch render: parallel progress ---------- */
-const jobsData = [['GS010435.360', 'riverbank', 1.0], ['GS010441.360', 'norway-tier', .78], ['GS010583.360', 'gorge-cave', 1.25], ['GS010348.360', 'celebrate', .9], ['GS010564.360', 'soca-boof', 1.1]];
-const jobsEl = $('jobs');
-const jobs = jobsData.map(([n, t, sp]) => {
-  const el = document.createElement('div'); el.className = 'job';
-  el.innerHTML = `<div class="th" style="background-image:url(assets/img/${t}.webp)"></div><span class="nm">${n}</span><span class="pc">0%</span><div class="bar"><i></i></div>`;
-  jobsEl.appendChild(el);
-  return { el, sp, p: 0, bar: el.querySelector('.bar i'), pc: el.querySelector('.pc') };
-});
-let renderOn = false, renderHold = 0;
-function renderTick() {
-  if (!renderOn) return;
-  requestAnimationFrame(renderTick);
-  let done = 0;
-  jobs.forEach(j => {
-    j.p = Math.min(100, j.p + j.sp * .32 * (0.7 + Math.random() * .6));
-    j.bar.style.width = j.p + '%'; j.pc.textContent = Math.floor(j.p) + '%';
-    j.el.classList.toggle('done', j.p >= 100);
-    if (j.p >= 100) done++;
-  });
-  $('rqDone').textContent = `${done}/${jobs.length}`;
-  $('rqState').textContent = done === jobs.length ? 'Complete' : 'Rendering';
-  if (done === jobs.length && ++renderHold > 150) { renderHold = 0; jobs.forEach(j => j.p = 0); }
-}
-inView($('renderW'), on => { renderOn = on && !reduced; if (renderOn) renderTick(); });
-if (reduced) jobs.forEach(j => { j.bar.style.width = '100%'; j.pc.textContent = '100%'; j.el.classList.add('done'); });
-
-/* ---------- 03 stabilization: shake the clip unless stabilized ---------- */
-const stabVid = $('stabVid'), gyro = $('gyro'), gctx = gyro.getContext('2d');
-let stabMode = 'level', stabAuto = true, stabOn = false, stabT = 0, stabLast = 0;
-const hist = [];
-// rough-water motion: a few incommensurate swells plus the odd hard hit
-const motion = t => {
-  const hit = Math.exp(-(((t % 3.7) - .4) ** 2) * 30) * Math.sin(t * 40);
-  return {
-    roll: 5 * Math.sin(t * 2.3) + 2.5 * Math.sin(t * 5.7 + 1) + 7 * hit,
-    pitch: 3 * Math.sin(t * 1.7 + 2) + 2 * Math.sin(t * 6.3) + 4 * hit,
-    yaw: 2.5 * Math.sin(t * .9 + .5) + 1.5 * Math.sin(t * 4.1),
-  };
-};
-for (let i = 160; i > 0; i--) hist.push(motion(-i / 60));
-function setStab(m) {
-  stabMode = m;
-  [...$('stabSeg').children].forEach(b => b.classList.toggle('on', b.dataset.m === m));
-}
-$('stabSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stabAuto = false; setStab(b.dataset.m); } });
-function stabTick(now) {
-  if (!stabOn) return;
-  requestAnimationFrame(stabTick);
-  const dt = Math.min((now - (stabLast || now)) / 1000, .05); stabLast = now; stabT += dt;
-  if (stabAuto) setStab(['off', 'level', 'lock'][Math.floor(stabT / 3) % 3]);
-  const m = motion(stabT);
-  const roll = stabMode === 'off' ? m.roll : 0;
-  const sx = stabMode === 'lock' ? 0 : m.yaw * 6, sy = stabMode === 'lock' ? 0 : m.pitch * 5;
-  stabVid.style.transform = `scale(1.14) translate(${sx}px,${sy}px) rotate(${roll}deg)`;
-  $('stabOut').textContent = `Horizon ${roll >= 0 ? '+' : '−'}${Math.abs(roll).toFixed(1)}°`;
-  // sensor trace keeps showing the raw motion: the camera still moves, the picture doesn't
-  hist.push(m); if (hist.length > 160) hist.shift();
-  const dpr = Math.min(devicePixelRatio || 1, 2), W = gyro.clientWidth * dpr, Hh = gyro.clientHeight * dpr;
-  if (gyro.width !== W) { gyro.width = W; gyro.height = Hh; }
-  gctx.clearRect(0, 0, W, Hh);
-  gctx.strokeStyle = 'rgba(255,255,255,.12)'; gctx.lineWidth = dpr;
-  gctx.beginPath(); gctx.moveTo(0, Hh / 2); gctx.lineTo(W, Hh / 2); gctx.stroke();
-  [['roll', '#e8705a'], ['pitch', '#2e9e8a'], ['yaw', '#8b7be8']].forEach(([k, c]) => {
-    gctx.strokeStyle = c; gctx.lineWidth = 1.6 * dpr; gctx.beginPath();
-    hist.forEach((h, i) => { const x = i / 159 * W, y = Hh / 2 - h[k] / 14 * (Hh / 2 - 4); i ? gctx.lineTo(x, y) : gctx.moveTo(x, y); });
-    gctx.stroke();
-  });
-}
-inView(gyro, on => { stabOn = on && !reduced; stabLast = 0; if (stabOn) requestAnimationFrame(stabTick); });
-
-/* ---------- 04 grading: primary, secondary, LUT ---------- */
-const gv = $('gradeView'), gWrap = $('gradedWrap'), gImg = $('gradedImg');
-const sliders = ['gExp', 'gCon', 'gSat', 'gTmp'].map($);
-const sec = { water: { el: $('secWater'), h: 0, s: 0 }, boat: { el: $('secBoat'), h: 0, s: 0 } };
-let secKey = 'water';
-const sign = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
-function applyGrade() {
-  const [e, c, s, t] = sliders.map(x => +x.value);
-  sliders.forEach(x => x.nextElementSibling.textContent = sign(+x.value));
-  const warm = t > 0 ? `sepia(${t / 160})` : `hue-rotate(${t * .25}deg)`;
-  const primary = `brightness(${1 + e / 120}) contrast(${1 + c / 90}) saturate(${1 + s / 55}) ${warm}`;
-  gImg.style.filter = primary;
-  Object.values(sec).forEach(r => r.el.style.filter = `${primary} hue-rotate(${r.h}deg) saturate(${1 + r.s / 50})`);
-}
-sliders.forEach(x => x.addEventListener('input', applyGrade));
-const sHue = $('sHue'), sSat = $('sSat');
-function showSec() {
-  sHue.value = sec[secKey].h; sSat.value = sec[secKey].s;
-  sHue.nextElementSibling.textContent = sign(+sHue.value) + '°'; sSat.nextElementSibling.textContent = sign(+sSat.value);
-  [...$('secPick').children].forEach(b => b.classList.toggle('on', b.dataset.k === secKey));
-}
-[sHue, sSat].forEach(x => x.addEventListener('input', () => { sec[secKey].h = +sHue.value; sec[secKey].s = +sSat.value; showSec(); applyGrade(); }));
-$('secPick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { secKey = b.dataset.k; showSec(); } });
-applyGrade(); showSec();
-let secShown = false;
-$('gTabs').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  [...$('gTabs').children].forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('#grade .tabp').forEach(p => p.hidden = p.dataset.t !== b.dataset.t);
-  // first visit to Secondary: swing the water hue so the selective change is obvious
-  if (b.dataset.t === 's' && !secShown && !reduced) {
-    secShown = true; secKey = 'water';
-    const t0 = performance.now();
-    (function tween(now) {
-      const k = Math.min((now - t0) / 900, 1);
-      sec.water.h = Math.round(ease(k) * 34); sec.water.s = Math.round(ease(k) * 18);
-      showSec(); applyGrade();
-      if (k < 1) requestAnimationFrame(tween);
-    })(t0);
-  }
-});
-const lutBtns = [...$('lutList').children];
-lutBtns.forEach(b => b.addEventListener('click', () => {
-  lutBtns.forEach(x => x.classList.toggle('on', x === b));
-  gWrap.style.filter = b.dataset.f;
-}));
-// draggable before/after lines (grading photo and the 10-bit sky)
-function splitter(line, area) {
-  let on = false;
-  line.addEventListener('pointerdown', e => { on = true; line.setPointerCapture(e.pointerId); });
-  line.addEventListener('pointermove', e => {
-    if (!on) return;
-    const r = area.getBoundingClientRect();
-    area.style.setProperty('--split', clamp((e.clientX - r.left) / r.width * 100, 8, 96) + '%');
-  });
-  line.addEventListener('pointerup', () => on = false);
-}
-splitter($('splitLine'), gv);
-gv.style.setProperty('--split', innerWidth < 900 ? '50%' : '36%');
-
-/* ---------- 05 10-bit: the same graded sky through an 8-bit and a 10-bit pipeline ---------- */
-const bits = $('bits');
-splitter($('bitsLine'), bits);
-const skyImg = new Image();
-skyImg.onload = () => {
-  // sky only (top of the frame), softened so the clouds become broad gradients
-  const W = 640, Hc = 400, sh = skyImg.height * .36, sw = sh * W / Hc, sx = skyImg.width * .22;
-  const src = document.createElement('canvas'); src.width = W; src.height = Hc;
-  const sc = src.getContext('2d');
-  sc.filter = 'blur(14px)';
-  sc.drawImage(skyImg, sx, 0, sw, sh, -30, -30, W + 60, Hc + 60);
-  const base = sc.getImageData(0, 0, W, Hc).data;
-  // a strong grade: deepen the blue and stretch contrast, which pulls 8-bit steps apart
-  const grade = (v, ch) => clamp((v - 160) * 1.5 + 150 + (ch === 2 ? 14 : ch === 0 ? -12 : 0), 0, 255);
-  [['bits8', 8], ['bits10', 10]].forEach(([id, depth]) => {
-    const cv = $(id); cv.width = W; cv.height = Hc;
-    const cx = cv.getContext('2d'), out = cx.createImageData(W, Hc), o = out.data;
-    for (let i = 0; i < base.length; i += 4) {
-      for (let ch = 0; ch < 3; ch++) {
-        let v = base[i + ch];
-        // 8-bit: whole steps before the grade stretches them apart (exaggerated ×6 so it reads on screen)
-        if (depth === 8) v = Math.round(v / 6) * 6;
-        else v += Math.random() - .5;
-        o[i + ch] = grade(v, ch);
-      }
-      o[i + 3] = 255;
-    }
-    cx.putImageData(out, 0, 0);
-  });
-};
-inView(bits, on => { if (on && !skyImg.src) skyImg.src = 'assets/video/hero.jpg'; }, '600px');
-
-/* ---------- 06 any shape: reframe the export, list the cuts ---------- */
-const frameStage = $('frameStage'), frame = $('frame'), shapeVid = $('shapeVid');
-const RES = { '16:9': '3840 × 2160', '9:16': '2160 × 3840', '1:1': '2160 × 2160', '4:5': '1728 × 2160', '21:9': '3840 × 1646' };
-const CUTS = [[0, 2.3], [2.3, 4.6], [4.6, 6.9]];
-let ratio = '16:9', shapeAuto = true;
-function layoutFrame() {
-  const [a, b] = ratio.split(':').map(Number), r = a / b;
-  const W = frameStage.clientWidth - 28, Hs = frameStage.clientHeight - 28;
-  const w = W / Hs > r ? Hs * r : W, h = w / r;
-  frame.style.width = w + 'px'; frame.style.height = h + 'px';
-  $('shapeRes').textContent = RES[ratio];
-  $('cuts').innerHTML = CUTS.map(([t0, t1], i) =>
-    `<div class="cut" data-i="${i}"><b>CUT ${i + 1}</b><span>00:0${t0.toFixed(1)} – 00:0${t1.toFixed(1)} → GS010564_cut${i + 1}_${ratio.replace(':', 'x')}.mp4</span></div>`).join('');
-  [...$('ratios').children].forEach(x => x.classList.toggle('on', x.dataset.r === ratio));
-}
-$('ratios').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { shapeAuto = false; ratio = b.dataset.r; layoutFrame(); } });
-shapeVid.addEventListener('timeupdate', () => {
-  const t = shapeVid.currentTime;
-  document.querySelectorAll('#cuts .cut').forEach((c, i) => c.classList.toggle('on', t >= CUTS[i][0] && t < CUTS[i][1] + (i === 2 ? 1 : 0)));
-});
-let shapeTimer = null;
-inView(frameStage, on => {
-  clearInterval(shapeTimer);
-  if (on && !reduced) shapeTimer = setInterval(() => {
-    if (!shapeAuto) return;
-    const keys = Object.keys(RES); ratio = keys[(keys.indexOf(ratio) + 1) % keys.length]; layoutFrame();
-  }, 2600);
-});
-layoutFrame();
-addEventListener('resize', layoutFrame);
-
-/* ---------- showcase: reel of finished clips, one per scroll step ---------- */
-const show = $('made'), reel = [...show.querySelectorAll('video')];
-show.style.height = (100 + reel.length * 70) + 'vh';
-const bars = reel.map(() => { const i = document.createElement('i'), b = document.createElement('b'); i.appendChild(b); $('showCount').appendChild(i); return b; });
-// load a clip (and the next one) only as the reel approaches it
-const load = v => { if (!v || v.src) return; v.src = (innerWidth < 900 && v.dataset.sm) || v.dataset.src; v.preload = 'auto'; };
-inView(show, on => { if (on) { load(reel[0]); load(reel[1]); } }, '900px');
-reel.forEach((v, i) => v.style.opacity = i ? 0 : 1);
-let showVisible = false, showIdx = -1;
-inView(show.firstElementChild, on => { showVisible = on; syncShow(); }, '100px');
-function syncShow() {
-  reel.forEach((v, i) => { if (showVisible && i === showIdx) v.play().catch(() => {}); else v.pause(); });
-}
-function onShow() {
-  const r = show.getBoundingClientRect();
-  const t = clamp(-r.top / (r.height - innerHeight), 0, .9999) * reel.length;
-  const idx = Math.floor(t);
-  if (idx !== showIdx) {
-    showIdx = idx;
-    load(reel[idx]); load(reel[idx + 1]);
-    reel.forEach((v, i) => v.style.opacity = i === idx ? 1 : 0);
-    const d = reel[idx].dataset;
-    $('showIn').textContent = d.in; $('showOut').textContent = d.out; $('showTitle').textContent = d.title;
-    syncShow();
-  }
-  bars.forEach((b, i) => b.style.width = clamp(t - i, 0, 1) * 100 + '%');
-}
-
-/* ---------- examples: drift wall + viewer ---------- */
-const V = 'assets/video/', CLIPS = [
-  { id: '0564', title: 'The gorge', file: 'GS010564.360', out: '16:9 · 4K · 142° FOV', src: V + (big ? 'export_0564_4k.mp4' : 'export_0564.mp4'), raw: 'gorge',
-    steps: ['Imported .360', 'Reframed 142° FOV', 'Horizon locked', 'Graded + LUT', 'Rendered 4K'] },
-  { id: '0555', title: 'The drop', file: 'GS010555.360', out: '16:9 · 4K · 142° FOV', src: V + 'export_0555_hq.mp4', raw: 'drop',
-    steps: ['Imported .360', 'Reframed 142° FOV', 'Keyframed camera', 'Graded + LUT', 'Rendered 4K'] },
-  { id: '0348b', title: 'King of the Alps', file: 'GS010348.360', out: '16:9 · 4K · 142° FOV', src: V + 'alps.mp4',
-    steps: ['Imported .360', 'Reframed 142° FOV', 'Preset applied', 'Batch rendered'] },
-  { id: '0348a', title: 'Race start', file: 'GS010348.360', out: '16:9 · 4K · 142° FOV', src: V + 'alps_bg.mp4',
-    steps: ['Imported .360', 'Reframed 142° FOV', 'Preset applied', 'Batch rendered'] },
-  { id: '0435', title: 'Lower Rauma', file: 'GS010435', out: '16:9 · 4K · graded', src: V + (big ? 'hero_4k.mp4' : 'hero_1440.mp4'),
-    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
-  { id: '0583', title: 'The canyon', file: 'GS010583', out: '16:9 · 4K · graded', src: V + 'canyon_bg.mp4',
-    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
-  { id: '0038', title: 'The waterfall', file: 'GS010038', out: '16:9 · 4K · graded', src: V + 'waterfall_drop.mp4',
-    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
-  { id: '0441', title: 'Big water', file: 'GS010441', out: '16:9 · 4K · graded', src: V + 'big_water.mp4',
-    steps: ['Colour graded', 'LUT applied', 'Rendered 4K'] },
-];
-CLIPS.forEach(c => c.poster = `assets/tiles/${c.id}-a.webp`);
-
-const drift = $('drift'), plane = $('driftPlane');
-let cols = [], wallOn = false, lastT = 0, wpx = 0, wpy = 0, wtx = 0, wty = 0;
-function buildWall() {
-  const w = innerWidth < 700 ? 150 : innerWidth < 1100 ? 200 : 240, h = Math.round(w * .62), gap = innerWidth < 700 ? 12 : 18;
-  const n = innerWidth < 700 ? 4 : innerWidth < 1100 ? 6 : 7;
-  drift.style.setProperty('--dw', w + 'px'); drift.style.setProperty('--dh', h + 'px'); drift.style.setProperty('--dgap', gap + 'px');
-  plane.innerHTML = ''; cols = [];
-  const per = Math.ceil(drift.clientHeight * 1.7 / (h + gap)) + 1;
-  // 16 looks: every clip with two different frames
-  const looks = CLIPS.flatMap((c, i) => [[i, 'a'], [i, 'b']]);
-  for (let c = 0; c < n; c++) {
-    const col = document.createElement('div'); col.className = 'dcol';
-    const seq = Array.from({ length: per }, (_, k) => looks[(c * 5 + k * 3) % looks.length]);
-    [...seq, ...seq].forEach(([i, f], k) => {
-      const clip = CLIPS[i], t = document.createElement('button');
-      t.className = 'dtile'; t.dataset.i = i;
-      if (k >= per) t.tabIndex = -1;
-      t.setAttribute('aria-label', `Open example: ${clip.title}`);
-      t.innerHTML = `<img src="assets/tiles/${clip.id}-${f}.webp" alt="" loading="lazy" decoding="async"><span class="lbl">${clip.title}${clip.raw ? '<i class="r">360°</i>' : '<i>4K</i>'}</span>`;
-      col.appendChild(t);
-    });
-    plane.appendChild(col);
-    const seed = Math.sin(c * 12.9898) * 43758.5453 % 1;
-    cols.push({ el: col, half: per * (h + gap), off: Math.abs(seed) * per * (h + gap), speed: 42 * (1 + .45 * (Math.abs(seed) * 2 - 1)), dir: c % 2 ? 1 : -1 });
-  }
-}
-function driftTick(t) {
-  if (!wallOn) return;
-  requestAnimationFrame(driftTick);
-  const dt = Math.min((t - (lastT || t)) / 1000, .05); lastT = t;
-  wtx += (wpx - wtx) * .06; wty += (wpy - wty) * .06;
-  plane.style.transform = `translate(-50%,-50%) translateZ(-120px) rotateX(${16 - wty * 6}deg) rotateY(${-14 + wtx * 8}deg)`;
-  cols.forEach(c => {
-    if (!reduced) c.off = (c.off + c.speed * dt) % c.half;
-    const y = c.dir < 0 ? -c.off : c.off - c.half;
-    c.el.style.transform = `translate3d(0,${y}px,0)`;
-  });
-}
-drift.addEventListener('pointermove', e => {
-  const r = drift.getBoundingClientRect();
-  wpx = (e.clientX - r.left) / r.width * 2 - 1; wpy = (e.clientY - r.top) / r.height * 2 - 1;
-});
-drift.addEventListener('pointerleave', () => { wpx = wpy = 0; });
-// hover preview: a short loop replaces the still while the pointer is on a tile
-plane.addEventListener('pointerover', e => {
-  const t = e.target.closest('.dtile'); if (!t || t.querySelector('video') || e.pointerType === 'touch') return;
-  const v = document.createElement('video');
-  Object.assign(v, { src: `assets/tiles/${CLIPS[t.dataset.i].id}.mp4`, muted: true, loop: true, playsInline: true, autoplay: true });
-  t.insertBefore(v, t.querySelector('.lbl'));
-});
-plane.addEventListener('pointerout', e => {
-  const t = e.target.closest('.dtile'); if (!t || t.contains(e.relatedTarget)) return;
-  const v = t.querySelector('video'); if (v) v.remove();
-});
-plane.addEventListener('click', e => { const t = e.target.closest('.dtile'); if (t) openLb(+t.dataset.i); });
-inView(drift, on => { wallOn = on; lastT = 0; if (on) requestAnimationFrame(driftTick); }, '100px');
-buildWall();
-let wallW = innerWidth;
-addEventListener('resize', () => { if (Math.abs(innerWidth - wallW) > 80) { wallW = innerWidth; buildWall(); } });
-
-/* example viewer */
-const lb = $('lb'), lbVid = $('lbVid'), lbGL = $('lbGL');
-let lbIdx = 0, lbMode = 'out', lbSphere = null, lastFocus = null;
-function lbRender() {
-  const c = CLIPS[lbIdx];
-  $('lbTitle').textContent = c.title; $('lbFile').textContent = c.file;
-  $('lbSteps').innerHTML = c.steps.map((s, i) => `<span><b>${String(i + 1).padStart(2, '0')}</b>${s}</span>`).join('');
-  $('lbSeg').hidden = !c.raw;
-  if (!c.raw) lbMode = 'out';
-  [...$('lbSeg').children].forEach(b => b.classList.toggle('on', b.dataset.m === lbMode));
-  const raw = lbMode === 'raw';
-  $('lbTag').innerHTML = raw ? `IN <b>${c.file} · raw 360°</b>` : `OUT <b>${c.out}</b>`;
-  lbGL.hidden = !raw; lbVid.hidden = raw; $('lbHint').hidden = !raw;
-  if (raw) {
-    lbVid.pause();
-    if (!lbSphere) {
-      lbSphere = Sphere(lbGL, clip(c.raw), `assets/360/${c.raw}.jpg`);
-      lbSphere.view.scale = .75;
-    } else lbSphere.setSrc(clip(c.raw), `assets/360/${c.raw}.jpg`);
-  } else {
-    if (lbSphere) lbSphere.video.pause();
-    if (!lbVid.src.endsWith(c.src)) { lbVid.poster = c.poster; lbVid.src = c.src; }
-    lbVid.play().catch(() => {});
-  }
-}
-function openLb(i) {
-  lbIdx = i; lbMode = 'out'; lastFocus = document.activeElement;
-  lb.classList.add('open'); document.documentElement.style.overflow = 'hidden';
-  lbRender(); $('lbClose').focus();
-}
-function closeLb() {
-  lb.classList.remove('open'); document.documentElement.style.overflow = '';
-  lbVid.pause(); if (lbSphere) lbSphere.video.pause();
-  if (lastFocus) lastFocus.focus();
-}
-const lbStep = d => { lbIdx = (lbIdx + d + CLIPS.length) % CLIPS.length; lbMode = 'out'; lbRender(); };
-$('lbClose').addEventListener('click', closeLb);
-$('lbPrev').addEventListener('click', () => lbStep(-1));
-$('lbNext').addEventListener('click', () => lbStep(1));
-lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
-$('lbSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { lbMode = b.dataset.m; lbRender(); } });
-addEventListener('keydown', e => {
-  if (!lb.classList.contains('open')) return;
-  if (e.key === 'Escape') closeLb();
-  if (e.key === 'ArrowRight') lbStep(1);
-  if (e.key === 'ArrowLeft') lbStep(-1);
-});
-let lbDrag = null;
-lbGL.addEventListener('pointerdown', e => { lbDrag = { x: e.clientX, y: e.clientY }; $('lbHint').hidden = true; lbGL.setPointerCapture(e.pointerId); });
-lbGL.addEventListener('pointermove', e => {
-  if (!lbDrag || !lbSphere) return;
-  const v = lbSphere.view, k = 2.2 * v.scale / lbGL.clientHeight;
-  v.yaw -= (e.clientX - lbDrag.x) * k; v.pitch = clamp(v.pitch + (e.clientY - lbDrag.y) * k, -1.3, 1.3);
-  lbDrag = { x: e.clientX, y: e.clientY };
-});
-lbGL.addEventListener('pointerup', () => lbDrag = null);
-lbGL.addEventListener('pointercancel', () => lbDrag = null);
-
-/* ---------- section background videos ---------- */
-document.querySelectorAll('.bgvid').forEach(v => {
-  inView(v, on => { if (on && !v.src) v.src = v.dataset.src; }, '600px');
+document.querySelectorAll('video[data-src]').forEach(v => {
+  inView(v, on => { if (on && !v.src) v.src = v.dataset.src; }, '400px');
   inView(v, on => on && !reduced ? v.play().catch(() => {}) : v.pause());
 });
 
-/* ---------- nav, parallax, reveals ---------- */
-const nav = $('nav'), ctaBg = $('ctaBg'), cta = $('get');
-function onScroll() {
-  nav.classList.toggle('solid', scrollY > innerHeight * .6);
-  onStatement(); onReframe(); onPanels(); onShow();
-  if (!reduced) ctaBg.style.transform = `translate3d(0,${(cta.getBoundingClientRect().top / innerHeight) * -60}px,0)`;
+/* ---------- 01 apply to all, render all ---------- */
+const CLIPS = [
+  ['GS010394', '0435-a', '0:33'], ['GS010395', '0564-a', '0:41'], ['GS010417', '0555-a', '0:19'], ['GS010418', '0583-a', '1:02'],
+  ['GS010419', '0435-b', '1:11'], ['GS010421', '0348a-a', '0:27'], ['GS010422', '0038-a', '0:48'], ['GS010423', '0441-a', '0:36'],
+  ['GS010424', '0564-b', '0:52'], ['GS010426', '0583-b', '0:22'], ['GS010427', '0348b-a', '0:44'],
+];
+const gal = $('gal');
+gal.innerHTML = CLIPS.map(([n, t, d]) => `<div class="card">
+  <div class="thumb"><img src="assets/tiles/${t}.webp" alt="" loading="lazy" decoding="async"><div class="pbar"><i></i></div><div class="done"><span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7.5 2.5 2.5L11 4.5"/></svg></span></div></div>
+  <div class="nm">${n}.360</div><div class="meta">5.6K .360 · ${d} · 16:9 · 135°</div>
+  <div class="tags"><span class="tag cam">YouTube 16:9</span><span class="tag col">YouTube 1</span></div></div>`).join('');
+const cards = [...gal.children];
+let galBusy = false;
+async function applyAll() {
+  if (galBusy) return; galBusy = true;
+  cards.forEach(c => c.classList.remove('graded', 'exported'));
+  cards.forEach(c => c.querySelector('.pbar i').style.width = '0');
+  $('galDone').textContent = '0 / 11'; $('galState').textContent = 'Applying YouTube 16:9 + YouTube 1…';
+  await sleep(300);
+  for (const c of cards) { c.classList.add('graded'); await sleep(reduced ? 0 : 90); }
+  $('galState').textContent = 'Applied to all 11 clips';
+  galBusy = false;
 }
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
-document.querySelectorAll('.rv').forEach(el => io.observe(el));
+async function exportAll() {
+  if (galBusy) return;
+  if (!cards[0].classList.contains('graded')) await applyAll();
+  galBusy = true;
+  cards.forEach(c => { c.classList.remove('exported'); c.querySelector('.pbar i').style.width = '0'; });
+  $('galState').textContent = 'Exporting all 11 clips…';
+  // every clip renders at the same time, at its own pace
+  const p = cards.map(() => 0), speed = cards.map(() => .5 + Math.random() * .7);
+  await new Promise(done => {
+    let last = performance.now();
+    (function step(now) {
+      const dt = Math.min(now - last, 50) / 1000; last = now;
+      let n = 0;
+      cards.forEach((c, i) => {
+        p[i] = Math.min(1, p[i] + speed[i] * dt * (reduced ? 9 : .45));
+        c.querySelector('.pbar i').style.width = p[i] * 100 + '%';
+        if (p[i] >= 1) { c.classList.add('exported'); n++; }
+      });
+      $('galDone').textContent = `${n} / 11`;
+      n < cards.length ? requestAnimationFrame(step) : done();
+    })(last);
+  });
+  $('galState').textContent = 'All 11 clips exported';
+  galBusy = false;
+}
+$('galApply').addEventListener('click', applyAll);
+$('galExport').addEventListener('click', exportAll);
+let galRan = false;
+inView($('galWin'), async on => {
+  if (!on || galRan) return; galRan = true;
+  await sleep(500); await applyAll(); await sleep(700); exportAll();
+});
 
-let ticking = false;
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { onScroll(); ticking = false; }); } }, { passive: true });
-addEventListener('resize', onScroll);
-onScroll();
+/* ---------- 02 presets ---------- */
+const CAM = [
+  { n: 'YouTube 16:9', r: '16:9', fov: 135, d: '16:9 · FOV 135° · Wide 27 · stab 34' },
+  { n: 'Reels 9:16', r: '9:16', fov: 120, d: '9:16 · FOV 120° · Linear · stab 40' },
+  { n: 'Instagram 4:5', r: '4:5', fov: 110, d: '4:5 · FOV 110° · Wide 20 · stab 30' },
+];
+const COL = [
+  { n: 'YouTube 1', f: 'hue-rotate(-6deg) saturate(1.15) contrast(1.06)', d: 'temp −27 → LUT GoProMAX_Flat_02_Sunny_Bright · 54%' },
+  { n: 'Glacier', f: 'saturate(1.4) contrast(1.12) hue-rotate(-10deg) brightness(1.03)', d: 'Rec.709 → grade +12 → LUT Glacier.cube' },
+  { n: 'Nordic Fade', f: 'saturate(.65) contrast(.9) brightness(1.08)', d: 'grade −20 sat → LUT Nordic_Fade.cube · 70%' },
+];
+let camSel = 0, colSel = 0;
+const pcard = (p, i, kind, on) => `<div class="pcard ${kind}${on ? ' on' : ''}" data-i="${i}"><b>${p.n}</b><button class="ui-btn">Apply</button><small>${p.d}</small></div>`;
+function renderPresets(newKind) {
+  $('camPresets').innerHTML = CAM.map((p, i) => pcard(p, i, 'cam', i === camSel)).join('');
+  $('colPresets').innerHTML = COL.map((p, i) => pcard(p, i, 'col', i === colSel)).join('');
+  if (newKind) $(newKind === 'cam' ? 'camPresets' : 'colPresets').lastElementChild.classList.add('new');
+  const c = CAM[camSel], [a, b] = c.r.split(':').map(Number), box = $('pvFrame').parentElement;
+  const W = box.clientWidth - 40, H = box.clientHeight - 30, w = W / H > a / b ? H * a / b : W;
+  Object.assign($('pvFrame').style, { width: w + 'px', height: w * b / a + 'px' });
+  $('pvImg').style.filter = COL[colSel].f;
+  $('pvAspect').textContent = c.r; $('pvFov').textContent = `FOV ${c.fov}°`; $('pvCol').textContent = COL[colSel].n;
+}
+function onPreset(e) {
+  const card = e.target.closest('.pcard'); if (!card) return;
+  const kind = card.classList.contains('cam') ? 'cam' : 'col', i = +card.dataset.i;
+  if (kind === 'cam') camSel = i; else colSel = i;
+  renderPresets();
+  if (e.target.closest('button')) $('applied').textContent = `✓ ${(kind === 'cam' ? CAM : COL)[i].n} applied to this clip`;
+}
+$('camPresets').addEventListener('click', onPreset);
+$('colPresets').addEventListener('click', onPreset);
+$('saveBtn').addEventListener('click', () => {
+  const name = $('saveName').value.trim() || `My preset ${COL.length - 2}`;
+  // a saved preset keeps the current colour; it is listed with the colour presets
+  COL.push({ n: name, f: COL[colSel].f, d: `saved from this clip · ${CAM[camSel].r} · FOV ${CAM[camSel].fov}°` });
+  colSel = COL.length - 1; $('saveName').value = '';
+  renderPresets('col');
+  $('applied').textContent = `✓ Saved “${name}”. It's ready for any clip, any time.`;
+});
+$('saveName').addEventListener('keydown', e => { if (e.key === 'Enter') $('saveBtn').click(); });
+renderPresets();
+addEventListener('resize', () => renderPresets());
+
+/* ---------- 03 node tree ---------- */
+const BASE = 'saturate(.5) contrast(.76) brightness(1.07)';   // flat camera profile
+const KINDS = {
+  cs: { c: 'var(--green)', t: 'Colour space', s: 'GoPro Flat → Rec.709', f: 'contrast(1.28) saturate(1.75) brightness(.95)' },
+  grade: { c: 'var(--purple)', t: 'Grade', s: 'temp −27 · contrast +8', f: 'hue-rotate(-6deg) contrast(1.08) saturate(1.08)' },
+  lut: { c: 'var(--orange)', t: 'LUT', s: 'GoProMAX_Flat_02_Sunny_Bright', f: 'brightness(1.05) saturate(1.22) contrast(1.06)' },
+  sec: { c: 'var(--blue)', t: 'Secondary', s: 'Water · hue +32 · sat +15', f: '' },
+};
+const LUTS = ['GoProMAX_Flat_02_Sunny_Bright', 'Teal_Orange.cube', 'Nordic_Fade.cube'];
+const LUTF = ['brightness(1.05) saturate(1.22) contrast(1.06)', 'sepia(.22) saturate(1.35) hue-rotate(-10deg) contrast(1.08)', 'saturate(.7) contrast(.92) brightness(1.06)'];
+let nodes = [{ k: 'grade', on: true }, { k: 'lut', on: true, v: 0 }], ntMode = 'g';
+function renderNodes(added) {
+  const flow = $('flow');
+  flow.innerHTML = '<span class="io"><i></i>INPUT</span><span class="wire"></span>' + nodes.map((n, i) => {
+    const K = KINDS[n.k], sub = n.k === 'lut' ? LUTS[n.v] : K.s;
+    return `<button class="node${n.on ? '' : ' off'}${i === added ? ' new' : ''}" style="--c:${K.c}" data-i="${i}" aria-pressed="${n.on}"><b><em>${String(i + 1).padStart(2, '0')}</em>${K.t}<i></i></b><small>${sub}</small><span class="x" data-x="${i}" role="button" aria-label="Remove node">×</span></button><span class="wire"></span>`;
+  }).join('') + '<span class="io">OUTPUT<i></i></span>';
+  const live = nodes.filter(n => n.on);
+  const chain = BASE + ' ' + live.map(n => n.k === 'lut' ? LUTF[n.v] : KINDS[n.k].f).join(' ');
+  $('ntImg').style.filter = chain;
+  const secOn = live.some(n => n.k === 'sec');
+  $('ntSec').style.filter = chain + ' hue-rotate(32deg) saturate(1.15)';
+  $('ntSec').style.opacity = secOn ? 1 : 0;
+  $('ntRaw').style.filter = BASE;
+  $('ntTag').textContent = `${live.length} node${live.length === 1 ? '' : 's'} · ${ntMode === 'u' ? 'ungraded' : 'graded'}`;
+  if (added != null) flow.scrollLeft = flow.scrollWidth;
+}
+$('flow').addEventListener('click', e => {
+  const x = e.target.closest('[data-x]');
+  if (x) { nodes.splice(+x.dataset.x, 1); return renderNodes(); }
+  const n = e.target.closest('.node'); if (!n) return;
+  nodes[+n.dataset.i].on = !nodes[+n.dataset.i].on; renderNodes();
+});
+document.querySelectorAll('.nt-add').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.add, node = { k, on: true };
+  // one colour-space conversion per tree: re-select the existing one instead
+  const cs = nodes.findIndex(n => n.k === 'cs');
+  if (k === 'cs' && cs >= 0) { nodes[cs].on = true; return renderNodes(cs); }
+  if (nodes.length >= 6) nodes.splice(nodes[0].k === 'cs' ? 1 : 0, 1);
+  if (k === 'lut') node.v = nodes.filter(n => n.k === 'lut').length % LUTS.length;
+  // a colour-space transform belongs first in the chain
+  if (k === 'cs') nodes.unshift(node); else nodes.push(node);
+  renderNodes(k === 'cs' ? 0 : nodes.length - 1);
+}));
+const ntView = $('ntView'), ntGraded = $('ntGraded'), ba = $('ntBa');
+$('ntSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  ntMode = b.dataset.m;
+  [...$('ntSeg').children].forEach(x => x.classList.toggle('on', x === b));
+  ntGraded.hidden = ntMode === 'u'; ba.hidden = ntMode !== 'b';
+  ntView.style.setProperty('--split', ntMode === 'b' ? '50%' : '0%');
+  renderNodes();
+});
+let baDrag = false;
+ba.addEventListener('pointerdown', e => { baDrag = true; ba.setPointerCapture(e.pointerId); });
+ba.addEventListener('pointermove', e => {
+  if (!baDrag) return;
+  const r = ntView.getBoundingClientRect();
+  ntView.style.setProperty('--split', clamp((e.clientX - r.left) / r.width * 100, 5, 95) + '%');
+});
+ba.addEventListener('pointerup', () => baDrag = false);
+renderNodes();
+
+/* ---------- 04 quick look ---------- */
+const FILES = ['GS010394', 'GS010395', 'GS010417', 'GS010418', 'GS010419', 'GS010421', 'GS010422', 'GS010423'];
+const FTH = ['0435-a', '0564-a', '0555-a', '0583-a', '0435-b', '0348a-a', '0038-a', '0441-a'];
+let fsel = 4, qlOpen = false, qlSectionOn = false;
+$('fgrid').innerHTML = FILES.map((f, i) => `<button class="file" data-i="${i}"><span class="ic"><img src="assets/tiles/${FTH[i]}.webp" alt="" loading="lazy" decoding="async"></span><small>${f}.360</small></button>`).join('');
+const files = [...$('fgrid').children], ql = $('ql'), qlVid = $('qlVid');
+function selectFile(i) {
+  fsel = (i + files.length) % files.length;
+  files.forEach((f, k) => f.classList.toggle('sel', k === fsel));
+  $('qlName').textContent = FILES[fsel] + '.360';
+}
+function toggleQL(force) {
+  qlOpen = force ?? !qlOpen;
+  ql.classList.toggle('open', qlOpen);
+  if (qlOpen) { if (!qlVid.src) qlVid.src = 'assets/v2/quicklook.mp4'; qlVid.play().catch(() => {}); } else qlVid.pause();
+  $('spaceKey').classList.add('down'); setTimeout(() => $('spaceKey').classList.remove('down'), 140);
+}
+$('fgrid').addEventListener('click', e => { const f = e.target.closest('.file'); if (f) selectFile(+f.dataset.i); });
+$('fgrid').addEventListener('dblclick', () => toggleQL(true));
+$('spaceKey').addEventListener('click', () => toggleQL());
+$('spaceKey').addEventListener('keydown', e => { if (e.key === 'Enter') toggleQL(); });
+ql.addEventListener('click', () => toggleQL(false));
+inView($('finder'), on => { qlSectionOn = on; if (!on && qlOpen) toggleQL(false); }, '-20% 0px');
+addEventListener('keydown', e => {
+  if (!qlSectionOn || /input|textarea/i.test(document.activeElement.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); toggleQL(); }
+  else if (e.key === 'Escape' && qlOpen) toggleQL(false);
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); selectFile(fsel + (e.key === 'ArrowRight' ? 1 : -1)); }
+});
+selectFile(fsel);
+
+/* ---------- optional live 360 view: nothing loads until asked ---------- */
+$('tryBtn').addEventListener('click', () => {
+  const view = $('tryView'), cv = document.createElement('canvas');
+  view.appendChild(cv); $('tryBtn').remove(); view.classList.add('live');
+  const gl = cv.getContext('webgl'); if (!gl) return;
+  const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
+  gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, `precision highp float;uniform sampler2D tex;uniform vec2 res;uniform float yaw,pitch,scale;
+    void main(){vec2 p=gl_FragCoord.xy/res*2.-1.;p.x*=res.x/res.y;p*=scale;vec3 q=normalize(vec3(p,-1.));
+    float cp=cos(pitch),sp=sin(pitch);q=vec3(q.x,q.y*cp-q.z*sp,q.y*sp+q.z*cp);
+    float cy=cos(yaw),sy=sin(yaw);q=vec3(q.x*cy+q.z*sy,q.y,-q.x*sy+q.z*cy);
+    gl_FragColor=texture2D(tex,vec2(.5+atan(q.x,-q.z)/6.2831853,.5-asin(clamp(q.y,-1.,1.))/3.1415927));}`));
+  gl.linkProgram(pr); gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+  const U = n => gl.getUniformLocation(pr, n);
+  const v = Object.assign(document.createElement('video'), { src: 'assets/360/drop.mp4', muted: true, loop: true, playsInline: true });
+  v.setAttribute('playsinline', '');
+  let yaw = 0, pitch = -.1, drag = null, visible = true, ready = false;
+  v.addEventListener('playing', () => ready = true);
+  v.play().catch(() => {});
+  cv.addEventListener('pointerdown', e => { drag = [e.clientX, e.clientY]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const k = 1.6 / cv.clientHeight;
+    yaw -= (e.clientX - drag[0]) * k; pitch = clamp(pitch + (e.clientY - drag[1]) * k, -1.3, 1.3); drag = [e.clientX, e.clientY];
+  });
+  cv.addEventListener('pointerup', () => drag = null);
+  inView(view, on => { visible = on; on ? (v.play().catch(() => {}), requestAnimationFrame(draw)) : v.pause(); });
+  function draw() {
+    if (!visible) return;
+    requestAnimationFrame(draw);
+    const d = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth * d, h = cv.clientHeight * d;
+    if (cv.width !== w) { cv.width = w; cv.height = h; }
+    gl.viewport(0, 0, w, h);
+    if (ready && v.readyState >= 2) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, v);
+    if (!drag && !reduced) yaw += .0012;
+    gl.uniform2f(U('res'), w, h); gl.uniform1f(U('yaw'), yaw); gl.uniform1f(U('pitch'), pitch); gl.uniform1f(U('scale'), .8);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  requestAnimationFrame(draw);
+});
 })();
 </script>
 </body>
